@@ -81,7 +81,7 @@
 ----------------------
 .. code-block:: bash
 
-  rain rm WEBSTACK
+  rain rm WEBSTACK --profile admin
 
 
 参考資料
