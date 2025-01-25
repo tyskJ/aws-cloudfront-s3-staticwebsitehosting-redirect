@@ -17,16 +17,25 @@ Metadata:
           - PublicSubnet1cCidr
           - PrivateSubnet1aCidr
           - PrivateSubnet1cCidr
+      - Label:
+          default: EC2 Settings.
+        Parameters:
+          - LatestAmiId
+          - InstanceType
+          - RootVolumeSize
 
-# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-# ║ Ep.003 WEB/APP Stack - CloudFormation Template Parameters                                                                                                ║
-# ╠═══════════════════════════════════════╤═══════════════════════╤══════════════════════════════════════════════════════════════════════════════════════════╣
-# ║ VpcCidr                               │ String                │ VPC Cidr.                                                                                ║
-# ║ PublicSubnet1aCidr                    │ String                │ Public Subnet AZ-A Cidr.                                                                 ║
-# ║ PublicSubnet1cCidr                    │ String                │ Public Subnet AZ-C Cidr.                                                                 ║
-# ║ PrivateSubnet1aCidr                   │ String                │ Private Subnet AZ-A Cidr.                                                                ║
-# ║ PrivateSubnet1cCidr                   │ String                │ Private Subnet AZ-C Cidr.                                                                ║
-# ╚═══════════════════════════════════════╧═══════════════════════╧══════════════════════════════════════════════════════════════════════════════════════════╝
+# ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ Ep.003 WEB/APP Stack - CloudFormation Template Parameters                                                                                                                          ║
+# ╠═══════════════════════════════════════╤═════════════════════════════════════════════════╤══════════════════════════════════════════════════════════════════════════════════════════╣
+# ║ VpcCidr                               │ String                                          │ VPC Cidr.                                                                                ║
+# ║ PublicSubnet1aCidr                    │ String                                          │ Public Subnet AZ-A Cidr.                                                                 ║
+# ║ PublicSubnet1cCidr                    │ String                                          │ Public Subnet AZ-C Cidr.                                                                 ║
+# ║ PrivateSubnet1aCidr                   │ String                                          │ Private Subnet AZ-A Cidr.                                                                ║
+# ║ PrivateSubnet1cCidr                   │ String                                          │ Private Subnet AZ-C Cidr.                                                                ║
+# ║ LatestAmiId                           │ AWS::SSM::Parameter::Value<AWS::EC2::Image::Id> │ Latest Amazon Linux 2023 Ami ID.                                                         ║
+# ║ InstanceType                          │ String                                          │ Instance Type.                                                                           ║
+# ║ RootVolumeSize                        │ Number                                          │ RootVolumeSize.                                                                          ║
+# ╚═══════════════════════════════════════╧═════════════════════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════════════╝
 Parameters:
   VpcCidr:
     Description: VPC Cidr
@@ -48,12 +57,32 @@ Parameters:
     Description: Private Subnet AZ-C Cidr
     Type: String
 
+  LatestAmiId:
+    Description: Latest Amazon Linux 2023 AMI ID.
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+
+  InstanceType:
+    Description: EC2 Instance Type.
+    Type: String
+
+  RootVolumeSize:
+    Description: EC2 Instance Root Volume Size.
+    Type: Number
+
 # ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ Ep.003 WEB/APP Stack - CloudFormation Template Mappings                                                               ║
 # ╠═════════════════════╤═════════════════════════════════════════════════════════════════════════════════════════════════╣
 # ║ VpcParams           │ VPC Paramters.                                                                                  ║
+# ║ IgwParams           │ Internet Gateway Paramters.                                                                     ║
 # ║ SubnetParams        │ Subnet Paramters.                                                                               ║
 # ║ NaclParams          │ NACL Paramters.                                                                                 ║
+# ║ RtbParams           │ RouteTable Paramters.                                                                           ║
+# ║ IamParams           │ IAM Paramters.                                                                                  ║
+# ║ SgParams            │ SecurityGroup Paramters.                                                                        ║
+# ║ EpParams            │ VPC Interface Endpoint Paramters.                                                               ║
+# ║ KeyPairParams       │ KeyPair Paramters.                                                                              ║
+# ║ Ec2Params           │ EC2 Instance Paramters.                                                                         ║
 # ╚═════════════════════╧═════════════════════════════════════════════════════════════════════════════════════════════════╝
 Mappings:
   VpcParams:
@@ -62,6 +91,9 @@ Mappings:
       DnsHost: true
       DnsSupport: true
       Cidr: VpcCidr
+  IgwParams:
+    IgwType:
+      Name: ep003-igw
   SubnetParams:
     PublicSubnet1a:
       Name: ep003-public-subnet-a
@@ -83,11 +115,51 @@ Mappings:
       AssocSubnet2: PublicSubnet1c
       AssocSubnet3: PrivateSubnet1a
       AssocSubnet4: PrivateSubnet1c
+  RtbParams:
+    RtbType:
+      RtbPublic: ep003-public-rtb
+      RtbPrivate: ep003-private-rtb
+    PublicAssociation:
+      RtbAssocPublicSubnet1: PublicSubnet1a
+      RtbAssocPublicSubnet2: PublicSubnet1c
+    PrivateAssociation:
+      RtbAssocPrivateSubnet1: PrivateSubnet1a
+      RtbAssocPrivateSubnet2: PrivateSubnet1c
+  IamParams:
+    IamType:
+      Description: IAM Role for EC2 Instance.
+      Name: ep003-iam-role-ec2
+  SgParams:
+    SgType:
+      AlbSg: ep003-alb-sg
+      Ec2Sg: ep003-ec2-sg
+      EpSg: ep003-vpcep-sg
+  EpParams:
+    EpType:
+      Ssm: ssm
+      Ec2: ec2
+      SsmMessages: ssmmessages
+      Ec2Messages: ec2messages
+  KeyPairParams:
+    KeyPairType:
+      Name: ep003-keypair
+  Ec2Params:
+    Instance1:
+      Name: ep003-ec2-instance
+      AmiId: LatestAmiId
+      InstanceType: InstanceType
+      RootVolumeSize: RootVolumeSize
+      SgName: Ec2Sg
+      SubnetName: PrivateSubnet1a
+      DeviceName: /dev/xvda
+      KeyPairName: KeyPair
 
 # ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ Ep.003 WEB/APP Stack - CloudFormation Template Resources                                                                                                           ║
 # ╠═════════════════════════════════════╤════════════════════════════════════════╤═════════════════════════════════════════════════════════════════════════════════════╣
 # ║ Vpc                                 │ AWS::EC2::VPC                          │ VPC.                                                                                ║
+# ║ Igw                                 │ AWS::EC2::InternetGateway              │ InternetGateway.                                                                    ║
+# ║ IgwAttach                           │ AWS::EC2::VPCGatewayAttachment         │ InternetGateway Attachment.                                                         ║
 # ║ PublicSubnet1a                      │ AWS::EC2::Subnet                       │ Public Subnet AZ-A.                                                                 ║
 # ║ PublicSubnet1c                      │ AWS::EC2::Subnet                       │ Public Subnet AZ-A.                                                                 ║
 # ║ PrivateSubnet1a                     │ AWS::EC2::Subnet                       │ Private Subnet AZ-A.                                                                ║
@@ -99,6 +171,30 @@ Mappings:
 # ║ AssocSubnet2                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
 # ║ AssocSubnet3                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
 # ║ AssocSubnet4                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
+# ║ RtbPublic                           │ AWS::EC2::RouteTable                   │ Public Subnet RouteTable.                                                           ║
+# ║ RtbPrivate                          │ AWS::EC2::RouteTable                   │ Private Subnet RouteTable.                                                          ║
+# ║ RtbAssocPublicSubnet1               │ AWS::EC2::SubnetRouteTableAssociation  │ RouteTable Association Public Subnet.                                               ║
+# ║ RtbAssocPublicSubnet2               │ AWS::EC2::SubnetRouteTableAssociation  │ RouteTable Association Public Subnet.                                               ║
+# ║ RtbAssocPrivateSubnet1              │ AWS::EC2::SubnetRouteTableAssociation  │ RouteTable Association Private Subnet.                                              ║
+# ║ RtbAssocPrivateSubnet2              │ AWS::EC2::SubnetRouteTableAssociation  │ RouteTable Association Private Subnet.                                              ║
+# ║ S3GwEp                              │ AWS::EC2::VPCEndpoint                  │ S3 Gateway Endpoint.                                                                ║
+# ║ RtbPublicEntry1                     │ AWS::EC2::Route                        │ RouteTable Entry 1.                                                                 ║
+# ║ Role                                │ AWS::IAM::Role                         │ EC2 IAM Role.                                                                       ║
+# ║ InstanceProfile                     │ AWS::IAM::InstanceProfile              │ EC2 IAM InstanceProfile.                                                            ║
+# ║ AlbSg                               │ AWS::EC2::SecurityGroup                │ ALB SecurityGroup.                                                                  ║
+# ║ Ec2Sg                               │ AWS::EC2::SecurityGroup                │ EC2 SecurityGroup.                                                                  ║
+# ║ EpSg                                │ AWS::EC2::SecurityGroup                │ VPC Interface Endpoint SecurityGroup.                                               ║
+# ║ AlbSgIngress01                      │ AWS::EC2::SecurityGroupIngress         │ ALB SG Allow HTTP from ALL.                                                         ║
+# ║ AlbSgIngress02                      │ AWS::EC2::SecurityGroupIngress         │ ALB SG Allow HTTPS from ALL.                                                        ║
+# ║ Ec2SgIngress01                      │ AWS::EC2::SecurityGroupIngress         │ EC2 SG Allow HTTP from ALB SG.                                                      ║
+# ║ EpSgIngress01                       │ AWS::EC2::SecurityGroupIngress         │ VPC Interface Endpoint SG Allow HTTPS from EC2 SG.                                  ║
+# ║ SsmEp                               │ AWS::EC2::VPCEndpoint                  │ SSM Interface VPC Endpoint.                                                         ║
+# ║ Ec2Ep                               │ AWS::EC2::VPCEndpoint                  │ EC2 Interface VPC Endpoint.                                                         ║
+# ║ SsmMessagesEp                       │ AWS::EC2::VPCEndpoint                  │ SSMMessagesInterface VPC Endpoint.                                                  ║
+# ║ Ec2MessagesEp                       │ AWS::EC2::VPCEndpoint                  │ EC2Messages Interface VPC Endpoint.                                                 ║
+# ║ KeyPair                             │ AWS::EC2::KeyPair                      │ KeyPair.                                                                            ║
+# ║ Ec2Instance                         │ AWS::EC2::Instance                     │ EC2 Instance.                                                                       ║
+# ║ XXX                     │ AWS::              │ .                                                            ║
 # ╚═════════════════════════════════════╧════════════════════════════════════════╧═════════════════════════════════════════════════════════════════════════════════════╝
 Resources:
   Vpc:
@@ -111,6 +207,19 @@ Resources:
       Tags:
         - Key: Name
           Value: !FindInMap [VpcParams, VpcType, Name]
+
+  Igw:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !FindInMap [IgwParams, IgwType, Name]
+
+  IgwAttach:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref Igw
 
   "Fn::ForEach::SubnetAzA":
     - SubnetType
@@ -177,3 +286,207 @@ Resources:
           SubnetId: !Ref
             "Fn::FindInMap": [NaclParams, Association, !Ref SubnetAssocNacl]
           NetworkAclId: !Ref Nacl
+
+  "Fn::ForEach::RouteTable":
+    - RtbVariable
+    - [RtbPublic, RtbPrivate]
+    - ${RtbVariable}:
+        Type: AWS::EC2::RouteTable
+        Properties:
+          VpcId: !Ref Vpc
+          Tags:
+            - Key: Name
+              Value: !FindInMap [RtbParams, RtbType, !Ref RtbVariable]
+
+  "Fn::ForEach::RtbAssocPublicSubnet":
+    - AssocVariable
+    - [RtbAssocPublicSubnet1, RtbAssocPublicSubnet2]
+    - ${AssocVariable}:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+          RouteTableId: !Ref RtbPublic
+          SubnetId: !Ref
+            "Fn::FindInMap": [RtbParams, PublicAssociation, !Ref AssocVariable]
+
+  "Fn::ForEach::RtbAssocPrivateSubnet":
+    - AssocVariable
+    - [RtbAssocPrivateSubnet1, RtbAssocPrivateSubnet2]
+    - ${AssocVariable}:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+          RouteTableId: !Ref RtbPrivate
+          SubnetId: !Ref
+            "Fn::FindInMap": [RtbParams, PrivateAssociation, !Ref AssocVariable]
+
+  S3GwEp:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref Vpc
+      VpcEndpointType: Gateway
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      RouteTableIds:
+        - !Ref RtbPublic
+        - !Ref RtbPrivate
+
+  RtbPublicEntry1:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      RouteTableId: !Ref RtbPublic
+      GatewayId: !Ref Igw
+
+  Role:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: !FindInMap [IamParams, IamType, Description]
+      RoleName: !FindInMap [IamParams, IamType, Name]
+      AssumeRolePolicyDocument:
+        {
+          "Version": "2012-10-17",
+          "Statement":
+            [
+              {
+                "Effect": "Allow",
+                "Principal": { "Service": ["ec2.amazonaws.com"] },
+                "Action": "sts:AssumeRole",
+              },
+            ],
+        }
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Name
+          Value: !FindInMap [IamParams, IamType, Name]
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref Role
+      InstanceProfileName: !FindInMap [IamParams, IamType, Name]
+
+  "Fn::ForEach::SecurityGroup":
+    - SgVariable
+    - [AlbSg, Ec2Sg, EpSg]
+    - ${SgVariable}:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+          GroupDescription: !Ref SgVariable
+          GroupName: !FindInMap [SgParams, SgType, !Ref SgVariable]
+          VpcId: !Ref Vpc
+          Tags:
+            - Key: Name
+              Value: !FindInMap [SgParams, SgType, !Ref SgVariable]
+
+  AlbSgIngress01:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow HTTP from All.
+      GroupId: !Ref AlbSg
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      CidrIp: 0.0.0.0/0
+
+  AlbSgIngress02:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow HTTPS from All.
+      GroupId: !Ref AlbSg
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
+
+  Ec2SgIngress01:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow HTTP from ALB SG.
+      GroupId: !Ref Ec2Sg
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref AlbSg
+
+  EpSgIngress01:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow HTTPS from EC2 SG.
+      GroupId: !Ref EpSg
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !Ref Ec2Sg
+
+  "Fn::ForEach::VpcEndpoint":
+    - EpVariable
+    - [Ssm, Ec2, SsmMessages, Ec2Messages]
+    - ${EpVariable}Ep:
+        Type: AWS::EC2::VPCEndpoint
+        Properties:
+          ServiceName: !Sub
+            - com.amazonaws.${AWS::Region}.${service}
+            - service: !FindInMap [EpParams, EpType, !Ref EpVariable]
+          VpcId: !Ref Vpc
+          SubnetIds:
+            - !Ref PrivateSubnet1c
+          SecurityGroupIds:
+            - !Ref EpSg
+          PrivateDnsEnabled: true
+          VpcEndpointType: Interface
+
+  KeyPair:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: !FindInMap [KeyPairParams, KeyPairType, Name]
+      KeyType: rsa
+      KeyFormat: pem
+      Tags:
+        - Key: Name
+          Value: !FindInMap [KeyPairParams, KeyPairType, Name]
+
+  Ec2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+      - SsmEp
+      - Ec2Ep
+      - SsmMessagesEp
+      - Ec2MessagesEp
+      - S3GwEp
+      - EpSgIngress01
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: !FindInMap [Ec2Params, Instance1, DeviceName]
+          Ebs:
+            DeleteOnTermination: true
+            Encrypted: true
+            VolumeSize: !Ref
+              "Fn::FindInMap": [Ec2Params, Instance1, RootVolumeSize]
+            VolumeType: gp3
+      DisableApiTermination: false
+      EbsOptimized: false
+      IamInstanceProfile: !Ref InstanceProfile
+      ImageId: !Ref
+        "Fn::FindInMap": [Ec2Params, Instance1, AmiId]
+      InstanceType: !Ref
+        "Fn::FindInMap": [Ec2Params, Instance1, InstanceType]
+      KeyName: !Ref
+        "Fn::FindInMap": [Ec2Params, Instance1, KeyPairName]
+      SecurityGroupIds:
+        - !Ref
+          "Fn::FindInMap": [Ec2Params, Instance1, SgName]
+      SubnetId: !Ref
+        "Fn::FindInMap": [Ec2Params, Instance1, SubnetName]
+      UserData:
+        "Fn::Base64": |
+          #!/bin/bash
+          dnf install -y httpd
+          echo \<html\>\<body\>\<h1\>Default Page\!\</h1\>\</body\>\</html\> > /var/www/html/index.html
+          echo \<html\>\<body\>\<h1\>Web Server Test1 Page\!\</h1\>\</body\>\</html\> > /var/www/html/test1.html
+          echo \<html\>\<body\>\<h1\>Web Server Test2 Page\!\</h1\>\</body\>\</html\> > /var/www/html/test2.html
+          sed -i '$aAlias /test1/test1.html /var/www/html/test1.html' /etc/httpd/conf.d/welcome.conf
+          sed -i '$aAlias /test2/test2.html /var/www/html/test2.html' /etc/httpd/conf.d/welcome.conf
+          systemctl enable --now httpd.service
+      Tags:
+        - Key: Name
+          Value: !FindInMap [Ec2Params, Instance1, Name]

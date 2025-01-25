@@ -5,3 +5,7 @@ Parameters:
   PublicSubnet1cCidr: 10.0.2.0/24
   PrivateSubnet1aCidr: 10.0.3.0/24
   PrivateSubnet1cCidr: 10.0.4.0/24
+  # EC2 Setting
+  #LatestAmiId: ami-0b28346b270c7b165
+  InstanceType: t3.large
+  RootVolumeSize: 30

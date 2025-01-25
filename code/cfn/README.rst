@@ -81,6 +81,7 @@
 -------------------------------
 * https://awscli.amazonaws.com/v2/documentation/api/latest/reference/index.html
 * https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html
+* https://docs.aws.amazon.com/linux/al2023/ug/ec2.html#launch-via-aws-cli
 
 ブログ
 -------------------------------
