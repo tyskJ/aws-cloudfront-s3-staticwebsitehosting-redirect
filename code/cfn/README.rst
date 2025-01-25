@@ -66,6 +66,15 @@
   --s3-bucket ep003-cfn-$DATE \
   --config webstack-parameter.yaml --profile admin
 
+* 以下プロンプトより入力
+
+.. csv-table::
+
+  "Parameter", "概要", "入力値"
+  "LatestAmiId", "AmazonLinux2023最新AMIID", "何も入力せずEnter"
+  "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
+  "Fqdn", "ALBのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
+
 後片付け - ローカル -
 ==============================
 1. *webstack* 削除
