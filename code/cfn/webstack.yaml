@@ -53,6 +53,7 @@ Parameters:
 # ╠═════════════════════╤═════════════════════════════════════════════════════════════════════════════════════════════════╣
 # ║ VpcParams           │ VPC Paramters.                                                                                  ║
 # ║ SubnetParams        │ Subnet Paramters.                                                                               ║
+# ║ NaclParams          │ NACL Paramters.                                                                                 ║
 # ╚═════════════════════╧═════════════════════════════════════════════════════════════════════════════════════════════════╝
 Mappings:
   VpcParams:
@@ -74,6 +75,14 @@ Mappings:
     PrivateSubnet1c:
       Name: ep003-private-subnet-c
       Cidr: PrivateSubnet1cCidr
+  NaclParams:
+    NaclType:
+      Name: ep003-nacl
+    Association:
+      AssocSubnet1: PublicSubnet1a
+      AssocSubnet2: PublicSubnet1c
+      AssocSubnet3: PrivateSubnet1a
+      AssocSubnet4: PrivateSubnet1c
 
 # ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ Ep.003 WEB/APP Stack - CloudFormation Template Resources                                                                                                           ║
@@ -83,6 +92,13 @@ Mappings:
 # ║ PublicSubnet1c                      │ AWS::EC2::Subnet                       │ Public Subnet AZ-A.                                                                 ║
 # ║ PrivateSubnet1a                     │ AWS::EC2::Subnet                       │ Private Subnet AZ-A.                                                                ║
 # ║ PrivateSubnet1c                     │ AWS::EC2::Subnet                       │ Private Subnet AZ-C.                                                                ║
+# ║ Nacl                                │ AWS::EC2::NetworkAcl                   │ All Allow NACL.                                                                     ║
+# ║ NaclInEntry100                      │ AWS::EC2::NetworkAclEntry              │ All Allow Inbound Entry.                                                            ║
+# ║ NaclOutEntry100                     │ AWS::EC2::NetworkAclEntry              │ All Allow Outbound Entry.                                                           ║
+# ║ AssocSubnet1                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
+# ║ AssocSubnet2                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
+# ║ AssocSubnet3                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
+# ║ AssocSubnet4                        │ AWS::EC2::SubnetNetworkAclAssociation  │ NACL Association.                                                                   ║
 # ╚═════════════════════════════════════╧════════════════════════════════════════╧═════════════════════════════════════════════════════════════════════════════════════╝
 Resources:
   Vpc:
@@ -123,3 +139,41 @@ Resources:
           Tags:
             - Key: Name
               Value: !FindInMap [SubnetParams, !Ref SubnetType, Name]
+
+  Nacl:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !FindInMap [NaclParams, NaclType, Name]
+
+  NaclInEntry100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      Egress: false
+      RuleNumber: 100
+      RuleAction: allow
+      Protocol: -1
+      CidrBlock: 0.0.0.0/0
+      NetworkAclId: !Ref Nacl
+
+  NaclOutEntry100:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      Egress: true
+      RuleNumber: 100
+      RuleAction: allow
+      Protocol: -1
+      CidrBlock: 0.0.0.0/0
+      NetworkAclId: !Ref Nacl
+
+  "Fn::ForEach::NaclAssociation":
+    - SubnetAssocNacl
+    - [AssocSubnet1, AssocSubnet2, AssocSubnet3, AssocSubnet4]
+    - ${SubnetAssocNacl}:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+          SubnetId: !Ref
+            "Fn::FindInMap": [NaclParams, Association, !Ref SubnetAssocNacl]
+          NetworkAclId: !Ref Nacl
