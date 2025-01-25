@@ -167,6 +167,14 @@ Mappings:
       CheckThresholdHealthy: 3
       CheckThresholdUnhealthy: 3
       CheckMatcher: 200
+    AlbType:
+      Name: ep003-alb
+      Type: application
+      SgName: AlbSg
+      Scheme: internet-facing
+      DeleteProtection: false
+      SubnetName1: PublicSubnet1a
+      SubnetName2: PublicSubnet1c
 
 # ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ Ep.003 WEB/APP Stack - CloudFormation Template Resources                                                                                                              ║
@@ -209,6 +217,7 @@ Mappings:
 # ║ KeyPair                             │ AWS::EC2::KeyPair                         │ KeyPair.                                                                            ║
 # ║ Ec2Instance                         │ AWS::EC2::Instance                        │ EC2 Instance.                                                                       ║
 # ║ TargetGroup                         │ AWS::ElasticLoadBalancingV2::TargetGroup  │ TargetGroup.                                                                        ║
+# ║ Alb                                 │ AWS::ElasticLoadBalancingV2::LoadBalancer │ ALB.                                                                                ║
 # ║ XXX                     │ AWS::              │ .                                                            ║
 # ╚═════════════════════════════════════╧═══════════════════════════════════════════╧═════════════════════════════════════════════════════════════════════════════════════╝
 Resources:
@@ -535,3 +544,24 @@ Resources:
       Tags:
         - Key: Name
           Value: !FindInMap [ElbParams, TargetGroupType, Name]
+
+  Alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !FindInMap [ElbParams, AlbType, Name]
+      Type: !FindInMap [ElbParams, AlbType, Type]
+      Scheme: !FindInMap [ElbParams, AlbType, Scheme]
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: !FindInMap [ElbParams, AlbType, DeleteProtection]
+      SecurityGroups:
+        - !Ref
+          "Fn::FindInMap": [ElbParams, AlbType, SgName]
+      Subnets:
+        - !Ref
+          "Fn::FindInMap": [ElbParams, AlbType, SubnetName1]
+        - !Ref
+          "Fn::FindInMap": [ElbParams, AlbType, SubnetName2]
+      Tags:
+        - Key: Name
+          Value: !FindInMap [ElbParams, AlbType, Name]
