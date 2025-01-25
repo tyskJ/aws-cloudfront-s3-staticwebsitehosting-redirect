@@ -1,0 +1,125 @@
+# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ Ep.003 WEB/APP Stack - CloudFormation Template                                                                                                           ║
+# ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "WEB/APP Stack."
+Transform:
+  - "AWS::LanguageExtensions"
+
+Metadata:
+  AWS::Cloudformation::Interface:
+    ParameterGroups:
+      - Label:
+          default: NW Settings.
+        Parameters:
+          - VpcCidr
+          - PublicSubnet1aCidr
+          - PublicSubnet1cCidr
+          - PrivateSubnet1aCidr
+          - PrivateSubnet1cCidr
+
+# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ Ep.003 WEB/APP Stack - CloudFormation Template Parameters                                                                                                ║
+# ╠═══════════════════════════════════════╤═══════════════════════╤══════════════════════════════════════════════════════════════════════════════════════════╣
+# ║ VpcCidr                               │ String                │ VPC Cidr.                                                                                ║
+# ║ PublicSubnet1aCidr                    │ String                │ Public Subnet AZ-A Cidr.                                                                 ║
+# ║ PublicSubnet1cCidr                    │ String                │ Public Subnet AZ-C Cidr.                                                                 ║
+# ║ PrivateSubnet1aCidr                   │ String                │ Private Subnet AZ-A Cidr.                                                                ║
+# ║ PrivateSubnet1cCidr                   │ String                │ Private Subnet AZ-C Cidr.                                                                ║
+# ╚═══════════════════════════════════════╧═══════════════════════╧══════════════════════════════════════════════════════════════════════════════════════════╝
+Parameters:
+  VpcCidr:
+    Description: VPC Cidr
+    Type: String
+
+  PublicSubnet1aCidr:
+    Description: Public Subnet AZ-A Cidr
+    Type: String
+
+  PublicSubnet1cCidr:
+    Description: Public Subnet AZ-C Cidr
+    Type: String
+
+  PrivateSubnet1aCidr:
+    Description: Private Subnet AZ-A Cidr
+    Type: String
+
+  PrivateSubnet1cCidr:
+    Description: Private Subnet AZ-C Cidr
+    Type: String
+
+# ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ Ep.003 WEB/APP Stack - CloudFormation Template Mappings                                                               ║
+# ╠═════════════════════╤═════════════════════════════════════════════════════════════════════════════════════════════════╣
+# ║ VpcParams           │ VPC Paramters.                                                                                  ║
+# ║ SubnetParams        │ Subnet Paramters.                                                                               ║
+# ╚═════════════════════╧═════════════════════════════════════════════════════════════════════════════════════════════════╝
+Mappings:
+  VpcParams:
+    VpcType:
+      Name: ep003-vpc
+      DnsHost: true
+      DnsSupport: true
+      Cidr: VpcCidr
+  SubnetParams:
+    PublicSubnet1a:
+      Name: ep003-public-subnet-a
+      Cidr: PublicSubnet1aCidr
+    PublicSubnet1c:
+      Name: ep003-public-subnet-c
+      Cidr: PublicSubnet1cCidr
+    PrivateSubnet1a:
+      Name: ep003-private-subnet-a
+      Cidr: PrivateSubnet1aCidr
+    PrivateSubnet1c:
+      Name: ep003-private-subnet-c
+      Cidr: PrivateSubnet1cCidr
+
+# ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ Ep.003 WEB/APP Stack - CloudFormation Template Resources                                                                                                           ║
+# ╠═════════════════════════════════════╤════════════════════════════════════════╤═════════════════════════════════════════════════════════════════════════════════════╣
+# ║ Vpc                                 │ AWS::EC2::VPC                          │ VPC.                                                                                ║
+# ║ PublicSubnet1a                      │ AWS::EC2::Subnet                       │ Public Subnet AZ-A.                                                                 ║
+# ║ PublicSubnet1c                      │ AWS::EC2::Subnet                       │ Public Subnet AZ-A.                                                                 ║
+# ║ PrivateSubnet1a                     │ AWS::EC2::Subnet                       │ Private Subnet AZ-A.                                                                ║
+# ║ PrivateSubnet1c                     │ AWS::EC2::Subnet                       │ Private Subnet AZ-C.                                                                ║
+# ╚═════════════════════════════════════╧════════════════════════════════════════╧═════════════════════════════════════════════════════════════════════════════════════╝
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref
+        "Fn::FindInMap": [VpcParams, VpcType, Cidr]
+      EnableDnsHostnames: !FindInMap [VpcParams, VpcType, DnsHost]
+      EnableDnsSupport: !FindInMap [VpcParams, VpcType, DnsSupport]
+      Tags:
+        - Key: Name
+          Value: !FindInMap [VpcParams, VpcType, Name]
+
+  "Fn::ForEach::SubnetAzA":
+    - SubnetType
+    - [PublicSubnet1a, PrivateSubnet1a]
+    - ${SubnetType}:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: !Ref Vpc
+          CidrBlock: !Ref
+            "Fn::FindInMap": [SubnetParams, !Ref SubnetType, Cidr]
+          AvailabilityZone: !Sub ${AWS::Region}a
+          Tags:
+            - Key: Name
+              Value: !FindInMap [SubnetParams, !Ref SubnetType, Name]
+
+  "Fn::ForEach::SubnetAzC":
+    - SubnetType
+    - [PublicSubnet1c, PrivateSubnet1c]
+    - ${SubnetType}:
+        Type: AWS::EC2::Subnet
+        Properties:
+          VpcId: !Ref Vpc
+          CidrBlock: !Ref
+            "Fn::FindInMap": [SubnetParams, !Ref SubnetType, Cidr]
+          AvailabilityZone: !Sub ${AWS::Region}c
+          Tags:
+            - Key: Name
+              Value: !FindInMap [SubnetParams, !Ref SubnetType, Name]
