@@ -175,6 +175,12 @@ Mappings:
       DeleteProtection: false
       SubnetName1: PublicSubnet1a
       SubnetName2: PublicSubnet1c
+    ListenerType:
+      Protocol: HTTP
+      Port: 80
+      LbName: Alb
+      DefaultActionType: forward
+      DefaultActionTargetGroupName: TargetGroup
 
 # ╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ Ep.003 WEB/APP Stack - CloudFormation Template Resources                                                                                                              ║
@@ -218,6 +224,7 @@ Mappings:
 # ║ Ec2Instance                         │ AWS::EC2::Instance                        │ EC2 Instance.                                                                       ║
 # ║ TargetGroup                         │ AWS::ElasticLoadBalancingV2::TargetGroup  │ TargetGroup.                                                                        ║
 # ║ Alb                                 │ AWS::ElasticLoadBalancingV2::LoadBalancer │ ALB.                                                                                ║
+# ║ Listener                            │ AWS::ElasticLoadBalancingV2::Listener     │ Listener.                                                                           ║
 # ║ XXX                     │ AWS::              │ .                                                            ║
 # ╚═════════════════════════════════════╧═══════════════════════════════════════════╧═════════════════════════════════════════════════════════════════════════════════════╝
 Resources:
@@ -518,6 +525,7 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
+      Name: !FindInMap [ElbParams, TargetGroupType, Name]
       VpcId: !Ref Vpc
       Protocol: !FindInMap [ElbParams, TargetGroupType, ReceiveProtocol]
       Port: !FindInMap [ElbParams, TargetGroupType, ReceivePort]
@@ -565,3 +573,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !FindInMap [ElbParams, AlbType, Name]
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Protocol: !FindInMap [ElbParams, ListenerType, Protocol]
+      Port: !FindInMap [ElbParams, ListenerType, Port]
+      LoadBalancerArn: !Ref
+        "Fn::FindInMap": [ElbParams, ListenerType, LbName]
+      DefaultActions:
+        - Type: !FindInMap [ElbParams, ListenerType, DefaultActionType]
+          TargetGroupArn: !Ref
+            "Fn::FindInMap":
+              [ElbParams, ListenerType, DefaultActionTargetGroupName]
