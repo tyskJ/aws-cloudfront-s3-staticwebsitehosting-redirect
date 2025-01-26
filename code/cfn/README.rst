@@ -75,6 +75,11 @@
   "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
   "Fqdn", "ALBのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
 
+.. note::
+
+  * *RecordSet* 作成に *HostedZoneId* を指定している
+  * *HostedZoneName* にしたい場合は、 *ルートドメイン(.)* が必要
+
 後片付け - ローカル -
 ==============================
 1. *webstack* 削除
