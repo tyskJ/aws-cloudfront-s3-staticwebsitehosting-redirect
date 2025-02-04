@@ -22,30 +22,9 @@
 
 事前作業(1)
 ==================
-1. *rain* リソースバイナリダウンロード
--------------------------------------
-* `GitHub <https://github.com/aws-cloudformation/rain>`_ から64bit版バイナリ( *rain-v1.21.0_darwin-amd64.zip* )をダウンロード
-
-.. code-block:: bash
-
-  RAIN_V=v1.20.2
-  curl -o ~/Downloads/#1 -OL https://github.com/aws-cloudformation/rain/releases/download/${RAIN_V}/{rain-${RAIN_V}_windows-amd64.zip}
-
-2. バイナリデータを任意のフォルダに解凍
---------------------------------------
-.. code-block:: bash
-
-  unzip -d ~/ ~/Downloads/rain-${RAIN_V}_windows-amd64.zip
-  rm -f ~/Downloads/rain-${RAIN_V}_windows-amd64.zip
-
-3. ディレクトリにPATHを通す
-------------------------------
-.. code-block:: bash
-
-  touch ~/.bashrc # .bashrcがない場合実行
-  sed -i '$aexport Rain_v=v1.20.2' ~/.bashrc
-  sed -i '$aexport PATH=$PATH:$HOME/rain-${RAIN_V}_windows-amd64' ~/.bashrc
-  source ~/.bashrc
+1. 各種モジュールインストール
+---------------------------------------------------------------------------------------
+* `GitHub <https://github.com/tyskJ/common-environment-setup>`_ を参照
 
 事前作業(2)
 ==============================
@@ -97,10 +76,6 @@
 ===============================
 リファレンス
 -------------------------------
-* https://awscli.amazonaws.com/v2/documentation/api/latest/reference/index.html
-* https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html
-* https://docs.aws.amazon.com/linux/al2023/ug/ec2.html#launch-via-aws-cli
-
-ブログ
--------------------------------
-* https://dev.classmethod.jp/articles/try-cloudformation-rain-on-windows/#toc-7
+* `AWS CLI Command Reference <https://awscli.amazonaws.com/v2/documentation/api/latest/reference/index.html>`_
+* `AWS CloudFormation ユーザーガイド <https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html>`_
+* `Launching AL2023 using the SSM parameter and AWS CLI <https://docs.aws.amazon.com/linux/al2023/ug/ec2.html#launch-via-aws-cli>`_
