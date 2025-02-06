@@ -485,7 +485,6 @@ Resources:
     Type: AWS::EC2::Instance
     DependsOn:
       - SsmEp
-      - Ec2Ep
       - SsmMessagesEp
       - Ec2MessagesEp
       - S3GwEp
