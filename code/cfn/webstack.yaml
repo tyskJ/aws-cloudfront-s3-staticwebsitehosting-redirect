@@ -155,7 +155,6 @@ Mappings:
   EpParams:
     EpType:
       Ssm: ssm
-      Ec2: ec2
       SsmMessages: ssmmessages
       Ec2Messages: ec2messages
   KeyPairParams:
@@ -233,7 +232,6 @@ Mappings:
 # ║ Ec2SgIngress01                      │ AWS::EC2::SecurityGroupIngress            │ EC2 SG Allow HTTP from ALB SG.                                 ║
 # ║ EpSgIngress01                       │ AWS::EC2::SecurityGroupIngress            │ VPC Interface Endpoint SG Allow HTTPS from EC2 SG.             ║
 # ║ SsmEp                               │ AWS::EC2::VPCEndpoint                     │ SSM Interface VPC Endpoint.                                    ║
-# ║ Ec2Ep                               │ AWS::EC2::VPCEndpoint                     │ EC2 Interface VPC Endpoint.                                    ║
 # ║ SsmMessagesEp                       │ AWS::EC2::VPCEndpoint                     │ SSMMessagesInterface VPC Endpoint.                             ║
 # ║ Ec2MessagesEp                       │ AWS::EC2::VPCEndpoint                     │ EC2Messages Interface VPC Endpoint.                            ║
 # ║ KeyPair                             │ AWS::EC2::KeyPair                         │ KeyPair.                                                       ║
@@ -458,7 +456,7 @@ Resources:
 
   "Fn::ForEach::VpcEndpoint":
     - EpVariable
-    - [Ssm, Ec2, SsmMessages, Ec2Messages]
+    - [Ssm, SsmMessages, Ec2Messages]
     - ${EpVariable}Ep:
         Type: AWS::EC2::VPCEndpoint
         Properties:
