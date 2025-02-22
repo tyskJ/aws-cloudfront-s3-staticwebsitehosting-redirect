@@ -30,12 +30,19 @@
 
 事前作業(2)
 =====================================================================
-1. デプロイ用S3バケット作成
+1. デプロイ用S3バケット作成(東京リージョン)
 ---------------------------------------------------------------------
 .. code-block:: bash
 
   DATE=$(date '+%Y%m%d')
-  aws s3 mb s3://ep003-cfn-$DATE --profile admin
+  aws s3 mb s3://cfn-$DATE-apne1 --profile admin
+
+2. デプロイ用S3バケット作成(バージニア北部リージョン)
+---------------------------------------------------------------------
+.. code-block:: bash
+
+  DATE=$(date '+%Y%m%d')
+  aws s3 mb s3://cfn-$DATE-useast1 --region us-east-1 --profile admin
 
 実作業 - ローカル -
 =====================================================================
@@ -75,7 +82,7 @@
 
 .. code-block:: bash
 
-  aws s3 cp redirect-rule.json s3://ep003-cfn-$DATE --profile admin
+  aws s3 cp redirect-rule.json s3://cfn-$DATE-apne1 --profile admin
 
 
 3. *webstack* デプロイ
@@ -83,7 +90,7 @@
 .. code-block:: bash
 
   rain deploy webstack.yaml WEBSTACK \
-  --s3-bucket ep003-cfn-$DATE \
+  --s3-bucket cfn-$DATE-apne1 \
   --config webstack-parameter.yaml --profile admin
 
 * 以下プロンプトより入力
@@ -102,9 +109,27 @@
   * *RecordSet* 作成に *HostedZoneId* を指定している
   * *HostedZoneName* にしたい場合は、 *ルートドメイン(.)* が必要
 
+4. HTMLファイルアップロード
+---------------------------------------------------------------------
+* *index.html*, *error.html* をリダイレクト用S3バケットにアップロード
+
+.. code-block:: bash
+
+  aws s3 cp index.html s3://デプロイしたS3バケット名 --profile admin
+  aws s3 cp error.html s3://デプロイしたS3バケット名 --profile admin
+
+
 後片付け - ローカル -
 =====================================================================
-1. *webstack* 削除
+1. デプロイしたS3バケットのオブジェクト削除
+---------------------------------------------------------------------
+* 中身を空にする必要があるため削除
+
+.. code-block:: bash
+
+  aws s3 rm --recursive s3://デプロイしたS3バケット名 --profile admin
+
+2. *webstack* 削除
 ---------------------------------------------------------------------
 .. code-block:: bash
 
@@ -114,6 +139,24 @@
 
   * webstack削除後、 *DNS検証* で自動作成されたホストゾーンの *CNAMEレコード* は残る
   * そのため、不要なら手動で *CNAMEレコード* を削除すること
+
+3. デプロイ用S3バケット作成(東京リージョン)削除
+---------------------------------------------------------------------
+* 中身を空にしバケットを削除
+
+.. code-block:: bash
+
+  aws s3 rm --recursive s3://cfn-$DATE-apne1 --profile admin
+  aws s3 rb s3://cfn-$DATE-apne1 --profile admin
+
+4. デプロイ用S3バケット作成(バージニア北部リージョン)削除
+---------------------------------------------------------------------
+* 中身を空にしバケットを削除
+
+.. code-block:: bash
+
+  aws s3 rm --recursive s3://cfn-$DATE-useast1 --profile admin
+  aws s3 rb s3://cfn-$DATE-useast1 --profile admin
 
 参考資料
 =====================================================================

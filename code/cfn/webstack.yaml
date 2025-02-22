@@ -652,6 +652,7 @@ Resources:
         RestrictPublicBuckets: false
       WebsiteConfiguration:
         IndexDocument: index.html
+        ErrorDocument: error.html
         Fn::Transform:
           Name: AWS::Include
           Parameters:
