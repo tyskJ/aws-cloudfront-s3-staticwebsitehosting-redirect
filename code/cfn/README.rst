@@ -44,7 +44,6 @@
 * *redirect-rule.json* ファイルの *HostName* をリダイレクト先FQDNに修正
 
 .. code-block:: json
-  :caption: test
 
   {
     "RoutingRules": [
@@ -72,6 +71,12 @@
 
 2. リダイレクトルールJSONファイルアップロード
 ---------------------------------------------------------------------
+* リダイレクトルールJSONファイルをデプロイ用S3バケットにアップロード
+
+.. code-block:: bash
+
+  aws s3 cp redirect-rule.json s3://ep003-cfn-$DATE --profile admin
+
 
 3. *webstack* デプロイ
 ---------------------------------------------------------------------
