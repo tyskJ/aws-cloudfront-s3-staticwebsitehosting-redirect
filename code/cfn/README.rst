@@ -94,8 +94,8 @@
   "LatestAmiId", "AmazonLinux2023最新AMIID", "何も入力せずEnter"
   "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
   "Fqdn", "ALBのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
-  "S3RedirectBucketName": "Redirect用S3バケット名"
-  "S3RedirectRuleFileS3Uri": "リダイレクトルールJSONファイルのS3URI"
+  "S3RedirectBucketName", "Redirect用S3バケット名"
+  "S3RedirectRuleFileS3Uri", "リダイレクトルールJSONファイルのS3URI"
 
 .. note::
 
