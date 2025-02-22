@@ -1,0 +1,74 @@
+# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template                                                                            ║
+# ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFront Stack."
+Transform:
+  - "AWS::LanguageExtensions"
+
+Metadata:
+  AWS::Cloudformation::Interface:
+    ParameterGroups:
+      - Label:
+          default: DNS Settings.
+        Parameters:
+          - HostedZoneId
+          - Fqdn
+      - Label:
+          default: S3 Bucket Settings.
+        Parameters:
+          - BucketName
+          - WebSiteEndpoint
+
+# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Parameters                                                                 ║
+# ╠═══════════════════════════════════════╤═════════════════════════════════════════════════╤════════════════════════════════════════════════════════╣
+# ║ HostedZoneId                          │ AWS::Route53::HostedZone::Id                    │ Public Hosted Zone ID.                                 ║
+# ║ Fqdn                                  │ String                                          │ FQDN.                                                  ║
+# ║ BucketName                            │ String                                          │ Redirect S3 Bucket Name.                               ║
+# ║ WebSiteEndpoint                       │ String                                          │ WebSite Endpoint Name.                                 ║
+# ╚═══════════════════════════════════════╧═════════════════════════════════════════════════╧════════════════════════════════════════════════════════╝
+Parameters:
+  HostedZoneId:
+    Description: HostedZone ID.
+    Type: AWS::Route53::HostedZone::Id
+
+  Fqdn:
+    Description: FQDN.
+    Type: String
+    AllowedPattern: "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z]{2,})+\\.?$"
+    ConstraintDescription: "The domain name must be valid. Example: example.com"
+
+  BucketName:
+    Description: Redirect S3 Bucket Name.
+    Type: String
+
+  WebSiteEndpoint:
+    Description: WebSite Endpoint Name.
+    Type: String
+
+# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Resources                                                                  ║
+# ╠═════════════════════════════════════╤═══════════════════════════════════════════╤════════════════════════════════════════════════════════════════╣
+# ║ BucketPolicy                        │ AWS::S3::BucketPolicy                     │ S3 Bucket Policy.                                              ║
+# ╚═════════════════════════════════════╧═══════════════════════════════════════════╧════════════════════════════════════════════════════════════════╝
+Resources:
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketName
+      PolicyDocument:
+        {
+          "Version": "2012-10-17",
+          "Statement":
+            [
+              {
+                "Sid": "AllowCloudFrontServicePrincipalReadWrite",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource":
+                  [{ "Fn::Sub": "arn:${AWS::Partition}:s3:::${BucketName}/*" }],
+              },
+            ],
+        }
