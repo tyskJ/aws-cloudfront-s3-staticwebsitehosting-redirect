@@ -44,7 +44,7 @@
 * *redirect-rule.json* ファイルの *HostName* をリダイレクト先FQDNに修正
 
 .. code-block:: json
-   :caption: test
+  :caption: test
 
   {
     "RoutingRules": [
