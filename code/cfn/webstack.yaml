@@ -673,6 +673,6 @@ Outputs:
 
   WebSiteEndpoint:
     Description: S3 Website Endpoint.
-    Value: !GetAtt Bucket.WebsiteURL
+    Value: !Select [1, !Split ["http://", !GetAtt Bucket.WebsiteURL]]
     Export:
       Name: s3-website-endpoint
