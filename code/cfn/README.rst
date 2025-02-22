@@ -118,6 +118,24 @@
   aws s3 cp index.html s3://デプロイしたS3バケット名 --profile admin
   aws s3 cp error.html s3://デプロイしたS3バケット名 --profile admin
 
+5. *cloudfrontstack* デプロイ
+---------------------------------------------------------------------
+.. code-block:: bash
+
+  rain deploy cloudfrontstack.yaml CLOUDFRONTSTACK \
+  --s3-bucket cfn-$DATE-useast1 \
+  --region us-east-1 --profile admin
+
+* 以下プロンプトより入力
+
+.. csv-table::
+
+  "Parameter", "概要", "入力値"
+  "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
+  "Fqdn", "CloudFrontのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
+  "BucketName", "Redirect用S3バケット名"
+  "WebSiteEndpoint", "Redirect用S3バケットのウェブサイトエンドポイント名"
+
 
 後片付け - ローカル -
 =====================================================================
