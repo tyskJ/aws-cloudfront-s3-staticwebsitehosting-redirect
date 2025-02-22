@@ -1,0 +1,22 @@
+{
+  "RoutingRules": [
+    {
+      "RoutingRuleCondition": {
+        "KeyPrefixEquals": "test1/"
+      },
+      "RedirectRule": {
+        "HostName": "リダイレクト先FQDN",
+        "ReplaceKeyPrefixWith": "test1/"
+      }
+    },
+    {
+      "RoutingRuleCondition": {
+        "KeyPrefixEquals": "test2/"
+      },
+      "RedirectRule": {
+        "HostName": "リダイレクト先FQDN",
+        "ReplaceKeyPrefixWith": "test2/"
+      }
+    }
+  ]
+}

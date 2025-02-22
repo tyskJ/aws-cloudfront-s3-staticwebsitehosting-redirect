@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-# ║ Ep.003 WEB/APP Stack - CloudFormation Template                                                                                                   ║
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template                                                                            ║
 # ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "WEB/APP Stack."
@@ -28,9 +28,14 @@ Metadata:
         Parameters:
           - HostedZoneId
           - Fqdn
+      - Label:
+          default: S3 Settings.
+        Parameters:
+          - S3RedirectBucketName
+          - S3RedirectRuleFileS3Uri
 
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-# ║ Ep.003 WEB/APP Stack - CloudFormation Template Parameters                                                                                        ║
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Parameters                                                                 ║
 # ╠═══════════════════════════════════════╤═════════════════════════════════════════════════╤════════════════════════════════════════════════════════╣
 # ║ VpcCidr                               │ String                                          │ VPC Cidr.                                              ║
 # ║ PublicSubnet1aCidr                    │ String                                          │ Public Subnet AZ-A Cidr.                               ║
@@ -42,6 +47,8 @@ Metadata:
 # ║ RootVolumeSize                        │ Number                                          │ RootVolumeSize.                                        ║
 # ║ HostedZoneId                          │ AWS::Route53::HostedZone::Id                    │ Public Hosted Zone ID.                                 ║
 # ║ Fqdn                                  │ String                                          │ FQDN.                                                  ║
+# ║ S3RedirectBucketName                  │ String                                          │ Redirect S3 Bucket Name.                               ║
+# ║ S3RedirectRuleFileS3Uri               │ String                                          │ Redirect Rule File S3 URI.                             ║
 # ╚═══════════════════════════════════════╧═════════════════════════════════════════════════╧════════════════════════════════════════════════════════╝
 Parameters:
   VpcCidr:
@@ -87,8 +94,20 @@ Parameters:
     AllowedPattern: "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z]{2,})+\\.?$"
     ConstraintDescription: "The domain name must be valid. Example: example.com"
 
+  S3RedirectBucketName:
+    Description: S3 Bucket Name for Redirect.
+    Type: String
+    AllowedPattern: "^(?!xn--|sthree(?:-configurator|-)|amzn-s3-demo-)(?!.*[.]{2})(?!.*\\d+\\.\\d+\\.\\d+\\.\\d+$)(?!.*-s3alias$)(?!.*--ol-s3$)(?!.*\\.mrap$)(?!.*--x-s3$)(?!.*\\..*)[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+    ConstraintDescription: "Check Reference URL: https://docs.aws.amazon.com/ja_jp/AmazonS3/latest/userguide/bucketnamingrules.html"
+
+  S3RedirectRuleFileS3Uri:
+    Description: S3 Rule File Location for Redirect.
+    Type: String
+    AllowedPattern: "^s3://.*"
+    ConstraintDescription: "Check S3 URI"
+
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-# ║ Ep.003 WEB/APP Stack - CloudFormation Template Mappings                                                                                          ║
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Mappings                                                                   ║
 # ╠═════════════════════╤════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 # ║ VpcParams           │ VPC Paramters.                                                                                                             ║
 # ║ IgwParams           │ Internet Gateway Paramters.                                                                                                ║
@@ -199,7 +218,7 @@ Mappings:
       DefaultActionTargetGroupName: TargetGroup
 
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-# ║ Ep.003 WEB/APP Stack - CloudFormation Template Resources                                                                                         ║
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Resources                                                                  ║
 # ╠═════════════════════════════════════╤═══════════════════════════════════════════╤════════════════════════════════════════════════════════════════╣
 # ║ Vpc                                 │ AWS::EC2::VPC                             │ VPC.                                                           ║
 # ║ Igw                                 │ AWS::EC2::InternetGateway                 │ InternetGateway.                                               ║
@@ -241,6 +260,7 @@ Mappings:
 # ║ Listener                            │ AWS::ElasticLoadBalancingV2::Listener     │ Listener.                                                      ║
 # ║ AlbRecordSet                        │ AWS::Route53::RecordSet                   │ Alias RecordSet for ALB.                                       ║
 # ║ AlbAcm                              │ AWS::CertificateManager::Certificate      │ ACM Public Certificate.                                        ║
+# ║ Bucket                              │ AWS::S3::Bucket                           │ S3 Bucket for Redirect.                                        ║
 # ╚═════════════════════════════════════╧═══════════════════════════════════════════╧════════════════════════════════════════════════════════════════╝
 Resources:
   Vpc:
@@ -615,3 +635,43 @@ Resources:
       Tags:
         - Key: Name
           Value: ep003-acm-certificate
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3RedirectBucketName
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: !Ref S3RedirectRuleFileS3Uri
+
+# ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+# ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Outputs                                                                    ║
+# ╠═══════════════════════════╤══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+# ║ BucketName                │ Bucket Name.                                                                                                         ║
+# ║ WebSiteEndpoint           │ S3 Website Endpoint Name.                                                                                            ║
+# ╚═══════════════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+Outputs:
+  BucketName:
+    Description: S3 Bucket Name.
+    Value: !Ref Bucket
+    Export:
+      Name: redirect-bucket-name
+
+  WebSiteEndpoint:
+    Description: S3 Website Endpoint.
+    Value: !GetAtt Bucket.WebsiteURL
+    Export:
+      Name: s3-website-endpoint

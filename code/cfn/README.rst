@@ -39,7 +39,40 @@
 
 実作業 - ローカル -
 =====================================================================
-1. *webstack* デプロイ
+1. リダイレクトルールJSONファイル修正
+---------------------------------------------------------------------
+* *redirect-rule.json*ファイルの *HostName* をリダイレクト先FQDNに修正
+
+.. code-block:: json
+
+  {
+    "RoutingRules": [
+      {
+        "RoutingRuleCondition": {
+          "KeyPrefixEquals": "test1/"
+        },
+        "RedirectRule": {
+          "HostName": "リダイレクト先FQDN",
+          "ReplaceKeyPrefixWith": "test1/"
+        }
+      },
+      {
+        "RoutingRuleCondition": {
+          "KeyPrefixEquals": "test2/"
+        },
+        "RedirectRule": {
+          "HostName": "リダイレクト先FQDN",
+          "ReplaceKeyPrefixWith": "test2/"
+        }
+      }
+    ]
+  }
+
+
+2. リダイレクトルールJSONファイルアップロード
+---------------------------------------------------------------------
+
+3. *webstack* デプロイ
 ---------------------------------------------------------------------
 .. code-block:: bash
 
@@ -55,6 +88,8 @@
   "LatestAmiId", "AmazonLinux2023最新AMIID", "何も入力せずEnter"
   "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
   "Fqdn", "ALBのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
+  "S3RedirectBucketName": "Redirect用S3バケット名"
+  "S3RedirectRuleFileS3Uri": "リダイレクトルールJSONファイルのS3URI"
 
 .. note::
 
