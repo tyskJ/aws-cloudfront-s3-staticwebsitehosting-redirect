@@ -124,29 +124,29 @@ Parameters:
 Mappings:
   VpcParams:
     VpcType:
-      Name: ep003-vpc
+      Name: vpc
       DnsHost: true
       DnsSupport: true
       Cidr: VpcCidr
   IgwParams:
     IgwType:
-      Name: ep003-igw
+      Name: igw
   SubnetParams:
     PublicSubnet1a:
-      Name: ep003-public-subnet-a
+      Name: public-subnet-a
       Cidr: PublicSubnet1aCidr
     PublicSubnet1c:
-      Name: ep003-public-subnet-c
+      Name: public-subnet-c
       Cidr: PublicSubnet1cCidr
     PrivateSubnet1a:
-      Name: ep003-private-subnet-a
+      Name: private-subnet-a
       Cidr: PrivateSubnet1aCidr
     PrivateSubnet1c:
-      Name: ep003-private-subnet-c
+      Name: private-subnet-c
       Cidr: PrivateSubnet1cCidr
   NaclParams:
     NaclType:
-      Name: ep003-nacl
+      Name: nacl
     Association:
       AssocSubnet1: PublicSubnet1a
       AssocSubnet2: PublicSubnet1c
@@ -154,8 +154,8 @@ Mappings:
       AssocSubnet4: PrivateSubnet1c
   RtbParams:
     RtbType:
-      RtbPublic: ep003-public-rtb
-      RtbPrivate: ep003-private-rtb
+      RtbPublic: public-rtb
+      RtbPrivate: private-rtb
     PublicAssociation:
       RtbAssocPublicSubnet1: PublicSubnet1a
       RtbAssocPublicSubnet2: PublicSubnet1c
@@ -165,12 +165,12 @@ Mappings:
   IamParams:
     IamType:
       Description: IAM Role for EC2 Instance.
-      Name: ep003-iam-role-ec2
+      Name: iam-role-ec2
   SgParams:
     SgType:
-      AlbSg: ep003-alb-sg
-      Ec2Sg: ep003-ec2-sg
-      EpSg: ep003-vpcep-sg
+      AlbSg: alb-sg
+      Ec2Sg: ec2-sg
+      EpSg: vpcep-sg
   EpParams:
     EpType:
       Ssm: ssm
@@ -178,10 +178,10 @@ Mappings:
       Ec2Messages: ec2messages
   KeyPairParams:
     KeyPairType:
-      Name: ep003-keypair
+      Name: keypair
   Ec2Params:
     Instance1:
-      Name: ep003-ec2-instance
+      Name: ec2-instance
       AmiId: LatestAmiId
       InstanceType: InstanceType
       RootVolumeSize: RootVolumeSize
@@ -191,7 +191,7 @@ Mappings:
       KeyPairName: KeyPair
   ElbParams:
     TargetGroupType:
-      Name: ep003-alb-targetgroup
+      Name: alb-targetgroup
       ReceiveProtocol: HTTP
       ReceivePort: 80
       CheckInterval: 10
@@ -203,7 +203,7 @@ Mappings:
       CheckThresholdUnhealthy: 3
       CheckMatcher: 200
     AlbType:
-      Name: ep003-alb
+      Name: alb
       Type: application
       SgName: AlbSg
       Scheme: internet-facing
@@ -634,7 +634,7 @@ Resources:
       ValidationMethod: DNS
       Tags:
         - Key: Name
-          Value: ep003-acm-certificate
+          Value: acm-certificate
 
   Bucket:
     Type: AWS::S3::Bucket
