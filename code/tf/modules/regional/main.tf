@@ -21,6 +21,7 @@
 # ║ vpcep_sg_in1          │ aws_security_group_rule           │ Ingress Rule HTTPS from EC2 SG.                                                      ║
 # ║ ec2_sg_in1            │ aws_security_group_rule           │ Ingress Rule HTTP from ALB SG.                                                       ║
 # ║ ec2_sg_out1           │ aws_security_group_rule           │ Egress Rule HTTPS to VPCEP SG.                                                       ║
+# ║ ec2_sg_out2           │ aws_security_group_rule           │ Egress Rule to VPCEP S3 GW.                                                          ║
 # ║ alb_sg_in1            │ aws_security_group_rule           │ Ingress Rule HTTPS from unrestricted.                                                ║
 # ║ alb_sg_out1           │ aws_security_group_rule           │ Egress Rule HTTP to EC2 SG.                                                          ║
 # ║ vpcep_if              │ aws_vpc_endpoint                  │ VPC Endpoint Interfaces.                                                             ║
@@ -195,6 +196,16 @@ resource "aws_security_group_rule" "ec2_sg_out1" {
   source_security_group_id = aws_security_group.vpcep_sg.id
 }
 
+resource "aws_security_group_rule" "ec2_sg_out2" {
+  type                     = "egress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  description              = "Egress Rule to VPCEP S3 GW."
+  security_group_id        = aws_security_group.ec2_sg.id
+  prefix_list_ids = ["pl-61a54008"]
+}
+
 resource "aws_security_group_rule" "alb_sg_in1" {
   type              = "ingress"
   from_port         = 443
@@ -292,5 +303,5 @@ resource "aws_instance" "ec2_instance" {
   tags = {
     Name = var.ec2_map.name
   }
-  depends_on = [aws_vpc_endpoint.vpcep_if, aws_security_group_rule.vpcep_sg_in1]
+  depends_on = [aws_vpc_endpoint.vpcep_if, aws_vpc_endpoint.vpcep_gw_s3]
 }
