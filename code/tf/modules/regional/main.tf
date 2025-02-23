@@ -38,6 +38,7 @@
 # ║ alb_cert_cname_record       │ aws_route53_record                │ CNAME record for alb certificate.                                              ║
 # ║ alb_cert_cname_record_valid │ aws_acm_certificate_validation    │ Verification of CNAME records for alb certificates.                            ║
 # ║ listener                    │ aws_lb_listener                   │ Listener for ALB.                                                              ║
+# ║ alb_recordset               │ aws_route53_record                │ ALB Alias Record Set.                                                          ║
 # ╚═════════════════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -396,4 +397,15 @@ resource "aws_lb_listener" "listener" {
     target_group_arn = aws_lb_target_group.targetgroup.arn
   }
   depends_on = [aws_acm_certificate_validation.alb_cert_cname_record_valid]
+}
+
+resource "aws_route53_record" "alb_recordset" {
+  zone_id = var.hostzone_id
+  name    = var.alb_fqdn
+  type    = "A"
+  alias {
+    name                   = aws_lb.alb.dns_name
+    zone_id                = aws_lb.alb.zone_id
+    evaluate_target_health = true
+  }
 }

@@ -3,6 +3,7 @@
 # ╠═════════════════════════╤═══════════════════════════════════╤════════════════════════════════════════════════════════════════════════════════════╣
 # ║ cert_issue_domain_name  │ string                            │ Domain name of the certificate to be issued.                                       ║
 # ║ hostzone_id             │ string                            │ Hostzone id.                                                                       ║
+# ║ alb_fqdn                │ string                            │ ALB FQDN.                                                                          ║
 # ╚═════════════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════════╝
 
 variable "cert_issue_domain_name" {
@@ -13,4 +14,9 @@ variable "cert_issue_domain_name" {
 variable "hostzone_id" {
   type        = string
   description = "Hostzone id."
+}
+
+variable "alb_fqdn" {
+  type        = string
+  description = "ALB FQDN."
 }

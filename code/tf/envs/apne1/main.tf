@@ -16,4 +16,5 @@ module "regional" {
   ec2_map                = { "name" = "ec2", "instancetype" = "t3.large", "volname" = "ebs-root", "volumesize" = "30" }
   cert_issue_domain_name = var.cert_issue_domain_name
   hostzone_id            = var.hostzone_id
+  alb_fqdn               = var.alb_fqdn
 }

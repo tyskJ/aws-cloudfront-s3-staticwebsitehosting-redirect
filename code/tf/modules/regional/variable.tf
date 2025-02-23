@@ -10,6 +10,7 @@
 # ║ ec2_map                 │ map(string)                       │ EC2 settings map.                                                                  ║
 # ║ cert_issue_domain_name  │ string                            │ Domain name of the certificate to be issued.                                       ║
 # ║ hostzone_id             │ string                            │ Hostzone id.                                                                       ║
+# ║ alb_fqdn                │ string                            │ ALB FQDN.                                                                          ║
 # ╚═════════════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════════╝
 
 variable "vpc_map" {
@@ -55,4 +56,9 @@ variable "cert_issue_domain_name" {
 variable "hostzone_id" {
   type        = string
   description = "Hostzone id."
+}
+
+variable "alb_fqdn" {
+  type        = string
+  description = "ALB FQDN."
 }
