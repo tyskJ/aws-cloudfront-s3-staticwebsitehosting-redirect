@@ -4,7 +4,7 @@
 # ║ vpc_map         │ map(string)                       │ VPC settings map.                                                                          ║
 # ║ subnet_map_list │ list(map(string))                 │ Subnet settings map list.                                                                  ║
 # ║ nacl_assoc_list │ list(string)                      │ NACL settings list.                                                                        ║
-# ║ vpcep_map       │ map(string)                       │ VPC Endpoint settings map.                                                                 ║
+# ║ vpcep_gw_map    │ map(string)                       │ VPC Endpoint settings map.                                                                 ║
 # ╚═════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════════════════╝
 
 variable "vpc_map" {
@@ -22,7 +22,7 @@ variable "nacl_assoc_list" {
   description = "NACL settings map."
 }
 
-variable "vpcep_map" {
+variable "vpcep_gw_map" {
   type        = map(string)
   description = "VPC Endpoint settings map."
 }

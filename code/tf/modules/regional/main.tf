@@ -15,6 +15,14 @@
 # ║ assoc_rtb_pri1  │ aws_route_table_association       │ RouteTable Association Subnet.                                                             ║
 # ║ assoc_rtb_pri2  │ aws_route_table_association       │ RouteTable Association Subnet.                                                             ║
 # ║ vpcep_gw_s3     │ aws_vpc_endpoint                  │ VPC Endpoint Gateway S3.                                                                   ║
+# ║ vpcep_sg        │ aws_security_group                │ Security Group for VPC Endpoint.                                                           ║
+# ║ ec2_sg          │ aws_security_group                │ Security Group for EC2.                                                                    ║
+# ║ alb_sg          │ aws_security_group                │ Security Group for ALB.                                                                    ║
+# ║ vpcep_sg_in1    │ aws_security_group_rule           │ Ingress Rule HTTPS from EC2 SG.                                                            ║
+# ║ ec2_sg_in1      │ aws_security_group_rule           │ Ingress Rule HTTP from ALB SG.                                                             ║
+# ║ ec2_sg_out1     │ aws_security_group_rule           │ Egress Rule HTTPS to VPCEP SG.                                                             ║
+# ║ alb_sg_in1      │ aws_security_group_rule           │ Ingress Rule HTTPS from unrestricted.                                                      ║
+# ║ alb_sg_out1     │ aws_security_group_rule           │ Egress Rule HTTP to EC2 SG.                                                                ║
 # ╚═════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -115,10 +123,87 @@ resource "aws_route_table_association" "assoc_rtb_pri2" {
 
 resource "aws_vpc_endpoint" "vpcep_gw_s3" {
   vpc_id            = aws_vpc.vpc.id
-  vpc_endpoint_type = var.vpcep_map.type
-  service_name      = var.vpcep_map.service
+  vpc_endpoint_type = var.vpcep_gw_map.type
+  service_name      = var.vpcep_gw_map.service
   route_table_ids   = [aws_route_table.rtb_public.id, aws_route_table.rtb_private.id]
   tags = {
-    Name = var.vpcep_map.name
+    Name = var.vpcep_gw_map.name
   }
+}
+
+resource "aws_security_group" "vpcep_sg" {
+  name        = "vpcep-sg"
+  vpc_id      = aws_vpc.vpc.id
+  description = "Security Group for VPC Endpoint."
+  tags = {
+    Name = "vpcep-sg"
+  }
+}
+
+resource "aws_security_group" "ec2_sg" {
+  name        = "ec2-sg"
+  vpc_id      = aws_vpc.vpc.id
+  description = "Security Group for EC2."
+  tags = {
+    Name = "ec2-sg"
+  }
+}
+
+resource "aws_security_group" "alb_sg" {
+  name        = "alb-sg"
+  vpc_id      = aws_vpc.vpc.id
+  description = "Security Group for ALB."
+  tags = {
+    Name = "alb-sg"
+  }
+}
+
+resource "aws_security_group_rule" "vpcep_sg_in1" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  description              = "Ingress Rule HTTPS from EC2 SG."
+  security_group_id        = aws_security_group.vpcep_sg.id
+  source_security_group_id = aws_security_group.ec2_sg.id
+}
+
+resource "aws_security_group_rule" "ec2_sg_in1" {
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  description              = "Ingress Rule HTTP from ALB SG."
+  security_group_id        = aws_security_group.ec2_sg.id
+  source_security_group_id = aws_security_group.alb_sg.id
+}
+
+resource "aws_security_group_rule" "ec2_sg_out1" {
+  type                     = "egress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  description              = "Egress Rule HTTPS to VPCEP SG."
+  security_group_id        = aws_security_group.ec2_sg.id
+  source_security_group_id = aws_security_group.vpcep_sg.id
+}
+
+resource "aws_security_group_rule" "alb_sg_in1" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  description       = "Ingress Rule HTTPS from unrestricted."
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "alb_sg_out1" {
+  type                     = "egress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  description              = "Egress Rule HTTP to EC2 SG."
+  security_group_id        = aws_security_group.alb_sg.id
+  source_security_group_id = aws_security_group.ec2_sg.id
 }
