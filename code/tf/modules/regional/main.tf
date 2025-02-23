@@ -46,6 +46,7 @@
 # ║ object1                     │ aws_s3_object                                       │ Upload file.                                                 ║
 # ║ object2                     │ aws_s3_object                                       │ Upload file.                                                 ║
 # ║ bucket_policy               │ aws_s3_bucket_policy                                │ S3 Bucket Policy.                                            ║
+# ║ cloudfront_cert             │ aws_acm_certificate                                 │ Public Certificate for CloudFront.                           ║
 # ╚═════════════════════════════╧═════════════════════════════════════════════════════╧══════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -361,7 +362,7 @@ resource "aws_lb" "alb" {
 
 # Certificate Issue
 resource "aws_acm_certificate" "alb_cert" {
-  domain_name       = var.cert_issue_domain_name
+  domain_name       = var.alb_cert_issue_domain_name
   validation_method = "DNS"
   tags = {
     Name = "alb-cert"
@@ -381,7 +382,7 @@ resource "aws_route53_record" "alb_cert_cname_record" {
     }
   }
 
-  zone_id = var.hostzone_id
+  zone_id = var.alb_hostzone_id
   name    = each.value.name
   type    = each.value.type
   records = [each.value.value]
@@ -407,7 +408,7 @@ resource "aws_lb_listener" "listener" {
 }
 
 resource "aws_route53_record" "alb_recordset" {
-  zone_id = var.hostzone_id
+  zone_id = var.alb_hostzone_id
   name    = var.alb_fqdn
   type    = "A"
   alias {
@@ -476,4 +477,18 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
     }
   )
   depends_on = [aws_s3_bucket_public_access_block.bucket_block_public_access]
+}
+
+
+# Certificate Issue
+resource "aws_acm_certificate" "cloudfront_cert" {
+  domain_name       = var.cloudfront_cert_issue_domain_name
+  validation_method = "DNS"
+  provider          = aws.global
+  tags = {
+    Name = "cloudfront-cert"
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
