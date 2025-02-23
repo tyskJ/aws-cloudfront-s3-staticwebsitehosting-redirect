@@ -43,6 +43,8 @@
 # ║ bucket_encrypt              │ aws_s3_bucket_server_side_encryption_configuration  │ S3 Bucket Encryption configuration.                          ║
 # ║ bucket_website              │ aws_s3_bucket_website_configuration                 │ Enable static web site hosting.                              ║
 # ║ bucket_block_public_access  │ aws_s3_bucket_public_access_block                   │ S3 Bucket Block Public Access.                               ║
+# ║ object1                     │ aws_s3_object                                       │ Upload file.                                                 ║
+# ║ object2                     │ aws_s3_object                                       │ Upload file.                                                 ║
 # ╚═════════════════════════════╧═════════════════════════════════════════════════════╧══════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -451,4 +453,16 @@ resource "aws_s3_bucket_public_access_block" "bucket_block_public_access" {
   ignore_public_acls      = true
   block_public_policy     = false
   restrict_public_buckets = false
+}
+
+resource "aws_s3_object" "object1" {
+  bucket = aws_s3_bucket.bucket.bucket
+  key    = "index.html"
+  source = "${path.module}/html/index.html"
+}
+
+resource "aws_s3_object" "object2" {
+  bucket = aws_s3_bucket.bucket.bucket
+  key    = "error.html"
+  source = "${path.module}/html/error.html"
 }
