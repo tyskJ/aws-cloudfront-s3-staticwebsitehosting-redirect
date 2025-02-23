@@ -29,6 +29,7 @@
 # ║ ssh_keygen            │ tls_private_key                   │ setting SSH keygen algorithm.                                                        ║
 # ║ keypair_pem           │ local_sensitive_file              │ create private key file to local.                                                    ║
 # ║ keypair               │ aws_key_pair                      │ Key Pair.                                                                            ║
+# ║ ec2_instance          │ aws_instance                      │ EC2 Instance.                                                                        ║
 # ╚═══════════════════════╧═══════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -263,4 +264,33 @@ resource "aws_key_pair" "keypair" {
   tags = {
     Name = "keypair"
   }
+}
+
+resource "aws_instance" "ec2_instance" {
+  ami                         = data.aws_ssm_parameter.amazonlinux_2023.value
+  associate_public_ip_address = false
+  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.name
+  key_name                    = aws_key_pair.keypair.key_name
+  instance_type               = var.ec2_map.instancetype
+  root_block_device {
+    volume_size           = var.ec2_map.volumesize
+    volume_type           = "gp3"
+    iops                  = 3000
+    throughput            = 125
+    delete_on_termination = true
+    encrypted             = true
+    tags = {
+      Name = var.ec2_map.volname
+    }
+  }
+  metadata_options {
+    http_tokens = "required"
+  }
+  subnet_id              = aws_subnet.subnet["private-subnet-a"].id
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  user_data              = file("${path.module}/sh/userdata.sh")
+  tags = {
+    Name = var.ec2_map.name
+  }
+  depends_on = [aws_vpc_endpoint.vpcep_if, aws_security_group_rule.vpcep_sg_in1]
 }

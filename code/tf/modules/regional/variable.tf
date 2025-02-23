@@ -7,6 +7,7 @@
 # ║ vpcep_gw_map      │ map(string)                       │ VPC Endpoint settings map.                                                               ║
 # ║ vpcep_if_map_list │ list(map(string))                 │ VPC Endpoint settings map.                                                               ║
 # ║ partition         │ string                            │ Partition.                                                                               ║
+# ║ ec2_map           │ map(string)                       │ EC2 settings map.                                                                        ║
 # ╚═══════════════════╧═══════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════════════╝
 
 variable "vpc_map" {
@@ -37,4 +38,9 @@ variable "vpcep_if_map_list" {
 variable "partition" {
   type        = string
   description = "partition."
+}
+
+variable "ec2_map" {
+  type        = map(string)
+  description = "EC2 settings map."
 }

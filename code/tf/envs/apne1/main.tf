@@ -13,4 +13,5 @@ module "regional" {
   vpcep_gw_map      = { "name" = "gw-s3", "type" = "Gateway", "service" = "com.amazonaws.${local.region_name}.s3" }
   vpcep_if_map_list = [{ "name" = "if-ec2messages", "type" = "Interface", "service" = "com.amazonaws.${local.region_name}.ec2messages" }, { "name" = "if-ssmmessages", "type" = "Interface", "service" = "com.amazonaws.${local.region_name}.ssmmessages" }, { "name" = "if-ssm", "type" = "Interface", "service" = "com.amazonaws.${local.region_name}.ssm" }]
   partition         = local.partition_name
+  ec2_map           = { "name" = "ec2", "instancetype" = "t3.large", "volname" = "ebs-root", "volumesize" = "30" }
 }
