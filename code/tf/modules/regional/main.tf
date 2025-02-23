@@ -42,6 +42,7 @@
 # ║ bucket                      │ aws_s3_bucket                                       │ S3 Bucket.                                                   ║
 # ║ bucket_encrypt              │ aws_s3_bucket_server_side_encryption_configuration  │ S3 Bucket Encryption configuration.                          ║
 # ║ bucket_website              │ aws_s3_bucket_website_configuration                 │ Enable static web site hosting.                              ║
+# ║ bucket_block_public_access  │ aws_s3_bucket_public_access_block                   │ S3 Bucket Block Public Access.                               ║
 # ╚═════════════════════════════╧═════════════════════════════════════════════════════╧══════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -442,4 +443,12 @@ resource "aws_s3_bucket_website_configuration" "bucket_website" {
       RedirectHost = var.alb_fqdn
     }
   )
+}
+
+resource "aws_s3_bucket_public_access_block" "bucket_block_public_access" {
+  bucket                  = aws_s3_bucket.bucket.id
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = false
+  restrict_public_buckets = false
 }
