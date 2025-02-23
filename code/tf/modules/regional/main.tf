@@ -45,6 +45,7 @@
 # ║ bucket_block_public_access  │ aws_s3_bucket_public_access_block                   │ S3 Bucket Block Public Access.                               ║
 # ║ object1                     │ aws_s3_object                                       │ Upload file.                                                 ║
 # ║ object2                     │ aws_s3_object                                       │ Upload file.                                                 ║
+# ║ bucket_policy               │ aws_s3_bucket_policy                                │ S3 Bucket Policy.                                            ║
 # ╚═════════════════════════════╧═════════════════════════════════════════════════════╧══════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -465,4 +466,14 @@ resource "aws_s3_object" "object2" {
   bucket = aws_s3_bucket.bucket.bucket
   key    = "error.html"
   source = "${path.module}/html/error.html"
+}
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  bucket = aws_s3_bucket.bucket.id
+  policy = templatefile("${path.module}/json/bucket-policy.json",
+    {
+      BucketArn = aws_s3_bucket.bucket.arn
+    }
+  )
+  depends_on = [aws_s3_bucket_public_access_block.bucket_block_public_access]
 }
