@@ -1,45 +1,48 @@
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ CloudFront S3 websitehosting redirect Stack - Terraform main.tf resource                                                                         ║
-# ╠═════════════════════════════╤═══════════════════════════════════╤════════════════════════════════════════════════════════════════════════════════╣
-# ║ vpc                         │ aws_vpc                           │ VPC.                                                                           ║
-# ║ subnet                      │ aws_subnet                        │ Subnet.                                                                        ║
-# ║ nacl                        │ aws_network_acl                   │ NACL.                                                                          ║
-# ║ nacl_in_rule100             │ aws_network_acl_rule              │ NACL Inbound Rule.                                                             ║
-# ║ nacl_out_rule100            │ aws_network_acl_rule              │ NACL Outbound Rule.                                                            ║
-# ║ assoc_nacl                  │ aws_network_acl_association       │ NACL Association Subnet.                                                       ║
-# ║ igw                         │ aws_internet_gateway              │ IGW.                                                                           ║
-# ║ rtb_public                  │ aws_route_table                   │ Public RouteTable.                                                             ║
-# ║ rtb_private                 │ aws_route_table                   │ Private RouteTable.                                                            ║
-# ║ assoc_rtb_pub1              │ aws_route_table_association       │ RouteTable Association Subnet.                                                 ║
-# ║ assoc_rtb_pub2              │ aws_route_table_association       │ RouteTable Association Subnet.                                                 ║
-# ║ assoc_rtb_pri1              │ aws_route_table_association       │ RouteTable Association Subnet.                                                 ║
-# ║ assoc_rtb_pri2              │ aws_route_table_association       │ RouteTable Association Subnet.                                                 ║
-# ║ vpcep_gw_s3                 │ aws_vpc_endpoint                  │ VPC Endpoint Gateway S3.                                                       ║
-# ║ vpcep_sg                    │ aws_security_group                │ Security Group for VPC Endpoint.                                               ║
-# ║ ec2_sg                      │ aws_security_group                │ Security Group for EC2.                                                        ║
-# ║ alb_sg                      │ aws_security_group                │ Security Group for ALB.                                                        ║
-# ║ vpcep_sg_in1                │ aws_security_group_rule           │ Ingress Rule HTTPS from EC2 SG.                                                ║
-# ║ ec2_sg_in1                  │ aws_security_group_rule           │ Ingress Rule HTTP from ALB SG.                                                 ║
-# ║ ec2_sg_out1                 │ aws_security_group_rule           │ Egress Rule HTTPS to VPCEP SG.                                                 ║
-# ║ ec2_sg_out2                 │ aws_security_group_rule           │ Egress Rule to VPCEP S3 GW.                                                    ║
-# ║ alb_sg_in1                  │ aws_security_group_rule           │ Ingress Rule HTTPS from unrestricted.                                          ║
-# ║ alb_sg_out1                 │ aws_security_group_rule           │ Egress Rule HTTP to EC2 SG.                                                    ║
-# ║ vpcep_if                    │ aws_vpc_endpoint                  │ VPC Endpoint Interfaces.                                                       ║
-# ║ ec2_role                    │ aws_iam_role                      │ IAM Role for EC2.                                                              ║
-# ║ ec2_instance_profile        │ aws_iam_instance_profile          │ IAM Instance Profile for EC2.                                                  ║
-# ║ ssh_keygen                  │ tls_private_key                   │ setting SSH keygen algorithm.                                                  ║
-# ║ keypair_pem                 │ local_sensitive_file              │ create private key file to local.                                              ║
-# ║ keypair                     │ aws_key_pair                      │ Key Pair.                                                                      ║
-# ║ ec2_instance                │ aws_instance                      │ EC2 Instance.                                                                  ║
-# ║ targetgroup                 │ aws_lb_target_group               │ Target Group for ALB.                                                          ║
-# ║ attach_targetgroup          │ aws_lb_target_group_attachment    │ Target Group attachment to EC2.                                                ║
-# ║ alb                         │ aws_lb                            │ ALB.                                                                           ║
-# ║ alb_cert                    │ aws_acm_certificate               │ Public Certificate for ALB.                                                    ║
-# ║ alb_cert_cname_record       │ aws_route53_record                │ CNAME record for alb certificate.                                              ║
-# ║ alb_cert_cname_record_valid │ aws_acm_certificate_validation    │ Verification of CNAME records for alb certificates.                            ║
-# ║ listener                    │ aws_lb_listener                   │ Listener for ALB.                                                              ║
-# ║ alb_recordset               │ aws_route53_record                │ ALB Alias Record Set.                                                          ║
-# ╚═════════════════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════╝
+# ╠═════════════════════════════╤═════════════════════════════════════════════════════╤══════════════════════════════════════════════════════════════╣
+# ║ vpc                         │ aws_vpc                                             │ VPC.                                                         ║
+# ║ subnet                      │ aws_subnet                                          │ Subnet.                                                      ║
+# ║ nacl                        │ aws_network_acl                                     │ NACL.                                                        ║
+# ║ nacl_in_rule100             │ aws_network_acl_rule                                │ NACL Inbound Rule.                                           ║
+# ║ nacl_out_rule100            │ aws_network_acl_rule                                │ NACL Outbound Rule.                                          ║
+# ║ assoc_nacl                  │ aws_network_acl_association                         │ NACL Association Subnet.                                     ║
+# ║ igw                         │ aws_internet_gateway                                │ IGW.                                                         ║
+# ║ rtb_public                  │ aws_route_table                                     │ Public RouteTable.                                           ║
+# ║ rtb_private                 │ aws_route_table                                     │ Private RouteTable.                                          ║
+# ║ assoc_rtb_pub1              │ aws_route_table_association                         │ RouteTable Association Subnet.                               ║
+# ║ assoc_rtb_pub2              │ aws_route_table_association                         │ RouteTable Association Subnet.                               ║
+# ║ assoc_rtb_pri1              │ aws_route_table_association                         │ RouteTable Association Subnet.                               ║
+# ║ assoc_rtb_pri2              │ aws_route_table_association                         │ RouteTable Association Subnet.                               ║
+# ║ vpcep_gw_s3                 │ aws_vpc_endpoint                                    │ VPC Endpoint Gateway S3.                                     ║
+# ║ vpcep_sg                    │ aws_security_group                                  │ Security Group for VPC Endpoint.                             ║
+# ║ ec2_sg                      │ aws_security_group                                  │ Security Group for EC2.                                      ║
+# ║ alb_sg                      │ aws_security_group                                  │ Security Group for ALB.                                      ║
+# ║ vpcep_sg_in1                │ aws_security_group_rule                             │ Ingress Rule HTTPS from EC2 SG.                              ║
+# ║ ec2_sg_in1                  │ aws_security_group_rule                             │ Ingress Rule HTTP from ALB SG.                               ║
+# ║ ec2_sg_out1                 │ aws_security_group_rule                             │ Egress Rule HTTPS to VPCEP SG.                               ║
+# ║ ec2_sg_out2                 │ aws_security_group_rule                             │ Egress Rule to VPCEP S3 GW.                                  ║
+# ║ alb_sg_in1                  │ aws_security_group_rule                             │ Ingress Rule HTTPS from unrestricted.                        ║
+# ║ alb_sg_out1                 │ aws_security_group_rule                             │ Egress Rule HTTP to EC2 SG.                                  ║
+# ║ vpcep_if                    │ aws_vpc_endpoint                                    │ VPC Endpoint Interfaces.                                     ║
+# ║ ec2_role                    │ aws_iam_role                                        │ IAM Role for EC2.                                            ║
+# ║ ec2_instance_profile        │ aws_iam_instance_profile                            │ IAM Instance Profile for EC2.                                ║
+# ║ ssh_keygen                  │ tls_private_key                                     │ setting SSH keygen algorithm.                                ║
+# ║ keypair_pem                 │ local_sensitive_file                                │ create private key file to local.                            ║
+# ║ keypair                     │ aws_key_pair                                        │ Key Pair.                                                    ║
+# ║ ec2_instance                │ aws_instance                                        │ EC2 Instance.                                                ║
+# ║ targetgroup                 │ aws_lb_target_group                                 │ Target Group for ALB.                                        ║
+# ║ attach_targetgroup          │ aws_lb_target_group_attachment                      │ Target Group attachment to EC2.                              ║
+# ║ alb                         │ aws_lb                                              │ ALB.                                                         ║
+# ║ alb_cert                    │ aws_acm_certificate                                 │ Public Certificate for ALB.                                  ║
+# ║ alb_cert_cname_record       │ aws_route53_record                                  │ CNAME record for alb certificate.                            ║
+# ║ alb_cert_cname_record_valid │ aws_acm_certificate_validation                      │ Verification of CNAME records for alb certificates.          ║
+# ║ listener                    │ aws_lb_listener                                     │ Listener for ALB.                                            ║
+# ║ alb_recordset               │ aws_route53_record                                  │ ALB Alias Record Set.                                        ║
+# ║ bucket                      │ aws_s3_bucket                                       │ S3 Bucket.                                                   ║
+# ║ bucket_encrypt              │ aws_s3_bucket_server_side_encryption_configuration  │ S3 Bucket Encryption configuration.                          ║
+# ║ bucket_website              │ aws_s3_bucket_website_configuration                 │ Enable static web site hosting.                              ║
+# ╚═════════════════════════════╧═════════════════════════════════════════════════════╧══════════════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_map.cidr
@@ -408,4 +411,35 @@ resource "aws_route53_record" "alb_recordset" {
     zone_id                = aws_lb.alb.zone_id
     evaluate_target_health = true
   }
+}
+
+resource "aws_s3_bucket" "bucket" {
+  bucket        = var.bucket_name
+  force_destroy = true
+
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "bucket_encrypt" {
+  bucket = aws_s3_bucket.bucket.id
+  rule {
+    bucket_key_enabled = true
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_website_configuration" "bucket_website" {
+  bucket = aws_s3_bucket.bucket.id
+  index_document {
+    suffix = "index.html"
+  }
+  error_document {
+    key = "error.html"
+  }
+  routing_rules = templatefile("${path.module}/json/redirect-rule.json",
+    {
+      RedirectHost = var.alb_fqdn
+    }
+  )
 }
