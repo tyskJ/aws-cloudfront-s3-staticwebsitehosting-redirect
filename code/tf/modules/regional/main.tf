@@ -385,3 +385,15 @@ resource "aws_acm_certificate_validation" "alb_cert_cname_record_valid" {
   certificate_arn         = aws_acm_certificate.alb_cert.arn
   validation_record_fqdns = [for record in aws_route53_record.alb_cert_cname_record : record.fqdn]
 }
+
+resource "aws_lb_listener" "listener" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate.alb_cert.arn
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.targetgroup.arn
+  }
+  depends_on = [aws_acm_certificate_validation.alb_cert_cname_record_valid]
+}
