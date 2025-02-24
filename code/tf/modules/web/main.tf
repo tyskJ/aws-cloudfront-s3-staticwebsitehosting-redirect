@@ -363,7 +363,6 @@ resource "aws_lb_listener" "listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.targetgroup.arn
   }
-  depends_on = [aws_acm_certificate_validation.alb_cert_cname_record_valid]
 }
 
 resource "aws_route53_record" "alb_recordset" {
