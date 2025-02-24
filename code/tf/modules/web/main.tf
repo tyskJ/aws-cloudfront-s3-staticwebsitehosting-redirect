@@ -39,17 +39,6 @@
 # ║ alb_cert_cname_record_valid        │ aws_acm_certificate_validation                      │ Verification of CNAME records for alb certificates.   ║
 # ║ listener                           │ aws_lb_listener                                     │ Listener for ALB.                                     ║
 # ║ alb_recordset                      │ aws_route53_record                                  │ ALB Alias Record Set.                                 ║
-# ║ bucket                             │ aws_s3_bucket                                       │ S3 Bucket.                                            ║
-# ║ bucket_encrypt                     │ aws_s3_bucket_server_side_encryption_configuration  │ S3 Bucket Encryption configuration.                   ║
-# ║ bucket_website                     │ aws_s3_bucket_website_configuration                 │ Enable static web site hosting.                       ║
-# ║ bucket_block_public_access         │ aws_s3_bucket_public_access_block                   │ S3 Bucket Block Public Access.                        ║
-# ║ object1                            │ aws_s3_object                                       │ Upload file.                                          ║
-# ║ object2                            │ aws_s3_object                                       │ Upload file.                                          ║
-# ║ bucket_policy                      │ aws_s3_bucket_policy                                │ S3 Bucket Policy.                                     ║
-# ║ cloudfront_cert                    │ aws_acm_certificate                                 │ Public Certificate for CloudFront.                    ║
-# ║ cloudfront_cert_cname_record       │ aws_route53_record                                  │ CNAME record for cloudfront certificate.              ║
-# ║ cloudfront_cert_cname_record_valid │ aws_acm_certificate_validation                      │ Verification of CNAME records for cloudfront cert.    ║
-# ║ distribution                       │ aws_cloudfront_distribution                         │ CloudFront Distribution.                              ║
 # ╚════════════════════════════════════╧═════════════════════════════════════════════════════╧═══════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -363,46 +352,13 @@ resource "aws_lb" "alb" {
   }
 }
 
-# Certificate Issue
-resource "aws_acm_certificate" "alb_cert" {
-  domain_name       = var.alb_cert_issue_domain_name
-  validation_method = "DNS"
-  tags = {
-    Name = "alb-cert"
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
 
-# Create certificate validation CNAME record
-resource "aws_route53_record" "alb_cert_cname_record" {
-  for_each = {
-    for dvo in aws_acm_certificate.alb_cert.domain_validation_options : dvo.domain_name => {
-      name  = dvo.resource_record_name
-      type  = dvo.resource_record_type
-      value = dvo.resource_record_value
-    }
-  }
-
-  zone_id = var.alb_hostzone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.value]
-  ttl     = 60
-}
-
-# Verification of CNAME records for alb certificates
-resource "aws_acm_certificate_validation" "alb_cert_cname_record_valid" {
-  certificate_arn         = aws_acm_certificate.alb_cert.arn
-  validation_record_fqdns = [for record in aws_route53_record.alb_cert_cname_record : record.fqdn]
-}
 
 resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 443
   protocol          = "HTTPS"
-  certificate_arn   = aws_acm_certificate.alb_cert.arn
+  certificate_arn   = var.alb_cert_arn
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.targetgroup.arn
@@ -420,104 +376,3 @@ resource "aws_route53_record" "alb_recordset" {
     evaluate_target_health = true
   }
 }
-
-resource "aws_s3_bucket" "bucket" {
-  bucket        = var.bucket_name
-  force_destroy = true
-
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "bucket_encrypt" {
-  bucket = aws_s3_bucket.bucket.id
-  rule {
-    bucket_key_enabled = true
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_website_configuration" "bucket_website" {
-  bucket = aws_s3_bucket.bucket.id
-  index_document {
-    suffix = "index.html"
-  }
-  error_document {
-    key = "error.html"
-  }
-  routing_rules = templatefile("${path.module}/json/redirect-rule.json",
-    {
-      RedirectHost = var.alb_fqdn
-    }
-  )
-}
-
-resource "aws_s3_bucket_public_access_block" "bucket_block_public_access" {
-  bucket                  = aws_s3_bucket.bucket.id
-  block_public_acls       = true
-  ignore_public_acls      = true
-  block_public_policy     = false
-  restrict_public_buckets = false
-}
-
-resource "aws_s3_object" "object1" {
-  bucket = aws_s3_bucket.bucket.bucket
-  key    = "index.html"
-  source = "${path.module}/html/index.html"
-}
-
-resource "aws_s3_object" "object2" {
-  bucket = aws_s3_bucket.bucket.bucket
-  key    = "error.html"
-  source = "${path.module}/html/error.html"
-}
-
-resource "aws_s3_bucket_policy" "bucket_policy" {
-  bucket = aws_s3_bucket.bucket.id
-  policy = templatefile("${path.module}/json/bucket-policy.json",
-    {
-      BucketArn = aws_s3_bucket.bucket.arn
-    }
-  )
-  depends_on = [aws_s3_bucket_public_access_block.bucket_block_public_access]
-}
-
-
-# Certificate Issue
-resource "aws_acm_certificate" "cloudfront_cert" {
-  domain_name       = var.cloudfront_cert_issue_domain_name
-  validation_method = "DNS"
-  provider          = aws.global
-  tags = {
-    Name = "cloudfront-cert"
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Create certificate validation CNAME record
-resource "aws_route53_record" "cloudfront_cert_cname_record" {
-  for_each = {
-    for dvo in aws_acm_certificate.cloudfront_cert.domain_validation_options : dvo.domain_name => {
-      name  = dvo.resource_record_name
-      type  = dvo.resource_record_type
-      value = dvo.resource_record_value
-    }
-  }
-
-  zone_id = var.cloudfront_hostzone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.value]
-  ttl     = 60
-}
-
-# Verification of CNAME records for alb certificates
-resource "aws_acm_certificate_validation" "cloudfront_cert_cname_record_valid" {
-  certificate_arn         = aws_acm_certificate.cloudfront_cert.arn
-  validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_cname_record : record.fqdn]
-  provider                = aws.global
-}
-
-# resource "aws_cloudfront_distribution" "distribution" {}
