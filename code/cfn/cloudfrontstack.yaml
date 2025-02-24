@@ -17,7 +17,6 @@ Metadata:
       - Label:
           default: S3 Bucket Settings.
         Parameters:
-          - BucketName
           - WebSiteEndpoint
 
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -25,7 +24,6 @@ Metadata:
 # ╠═══════════════════════════════════════╤═════════════════════════════════════════════════╤════════════════════════════════════════════════════════╣
 # ║ HostedZoneId                          │ AWS::Route53::HostedZone::Id                    │ Public Hosted Zone ID.                                 ║
 # ║ Fqdn                                  │ String                                          │ FQDN.                                                  ║
-# ║ BucketName                            │ String                                          │ Redirect S3 Bucket Name.                               ║
 # ║ WebSiteEndpoint                       │ String                                          │ WebSite Endpoint Name.                                 ║
 # ╚═══════════════════════════════════════╧═════════════════════════════════════════════════╧════════════════════════════════════════════════════════╝
 Parameters:
@@ -39,10 +37,6 @@ Parameters:
     AllowedPattern: "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z]{2,})+\\.?$"
     ConstraintDescription: "The domain name must be valid. Example: example.com"
 
-  BucketName:
-    Description: Redirect S3 Bucket Name.
-    Type: String
-
   WebSiteEndpoint:
     Description: WebSite Endpoint Name.
     Type: String
@@ -53,7 +47,6 @@ Parameters:
 # ║ CloudFrontCert                      │ AWS::CertificateManager::Certificate      │ ACM Public Certificate.                                        ║
 # ║ Distribution                        │ AWS::CloudFront::Distribution             │ CloudFront Distribution.                                       ║
 # ║ CloudFrontRecordSet                 │ AWS::Route53::RecordSet                   │ Alias RecordSet for CloudFront.                                ║
-# ║ BucketPolicy                        │ AWS::S3::BucketPolicy                     │ S3 Bucket Policy.                                              ║
 # ╚═════════════════════════════════════╧═══════════════════════════════════════════╧════════════════════════════════════════════════════════════════╝
 Resources:
   CloudFrontCert:
@@ -106,25 +99,3 @@ Resources:
         DNSName: !GetAtt Distribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
         EvaluateTargetHealth: true
-
-  BucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref BucketName
-      PolicyDocument:
-        {
-          "Version": "2012-10-17",
-          "Statement":
-            [
-              {
-                "Sid": "AllowCloudFrontServicePrincipalReadWrite",
-                "Effect": "Allow",
-                "Principal": "*",
-                "Action": "s3:GetObject",
-                "Resource":
-                  [{ "Fn::Sub": "arn:${AWS::Partition}:s3:::${BucketName}/*" }],
-                "Condition":
-                  { "StringEquals": { "aws:UserAgent": "Amazon CloudFront" } },
-              },
-            ],
-        }

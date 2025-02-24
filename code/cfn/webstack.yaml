@@ -261,6 +261,7 @@ Mappings:
 # ║ AlbRecordSet                        │ AWS::Route53::RecordSet                   │ Alias RecordSet for ALB.                                       ║
 # ║ AlbAcm                              │ AWS::CertificateManager::Certificate      │ ACM Public Certificate.                                        ║
 # ║ Bucket                              │ AWS::S3::Bucket                           │ S3 Bucket for Redirect.                                        ║
+# ║ BucketPolicy                        │ AWS::S3::BucketPolicy                     │ S3 Bucket Policy.                                              ║
 # ╚═════════════════════════════════════╧═══════════════════════════════════════════╧════════════════════════════════════════════════════════════════╝
 Resources:
   Vpc:
@@ -658,19 +659,34 @@ Resources:
           Parameters:
             Location: !Ref S3RedirectRuleFileS3Uri
 
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Bucket
+      PolicyDocument:
+        {
+          "Version": "2012-10-17",
+          "Statement":
+            [
+              {
+                "Sid": "AllowCloudFrontServicePrincipalReadWrite",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource":
+                  [{ "Fn::Sub": "arn:${AWS::Partition}:s3:::${Bucket}/*" }],
+                "Condition":
+                  { "StringEquals": { "aws:UserAgent": "Amazon CloudFront" } },
+              },
+            ],
+        }
+
 # ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 # ║ CloudFront S3 websitehosting redirect Stack - CloudFormation Template Outputs                                                                    ║
 # ╠═══════════════════════════╤══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-# ║ BucketName                │ Bucket Name.                                                                                                         ║
 # ║ WebSiteEndpoint           │ S3 Website Endpoint Name.                                                                                            ║
 # ╚═══════════════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 Outputs:
-  BucketName:
-    Description: S3 Bucket Name.
-    Value: !Ref Bucket
-    Export:
-      Name: redirect-bucket-name
-
   WebSiteEndpoint:
     Description: S3 Website Endpoint.
     Value: !Select [1, !Split ["http://", !GetAtt Bucket.WebsiteURL]]
