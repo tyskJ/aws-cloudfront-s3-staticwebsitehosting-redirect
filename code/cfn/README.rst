@@ -99,10 +99,10 @@
 
   "Parameter", "概要", "入力値"
   "LatestAmiId", "AmazonLinux2023最新AMIID", "何も入力せずEnter"
-  "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
+  "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身が所有するパブリックホストゾーンID（ALBのAliasレコード登録先）"
   "Fqdn", "ALBのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
-  "S3RedirectBucketName", "Redirect用S3バケット名"
-  "S3RedirectRuleFileS3Uri", "リダイレクトルールJSONファイルのS3URI"
+  "S3RedirectBucketName", "Redirect用S3バケット名", "静的ウェブサイトホスティング用のS3バケット名"
+  "S3RedirectRuleFileS3Uri", "リダイレクトルールJSONファイルのS3URI", "アップロードしたリダイレクトルールファイルのS3URI"
 
 .. note::
 
@@ -131,10 +131,10 @@
 .. csv-table::
 
   "Parameter", "概要", "入力値"
-  "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身で登録したホストゾーンID"
+  "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身が所有するパブリックホストゾーンID（CloudFrontのAliasレコード登録先）"
   "Fqdn", "CloudFrontのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
-  "BucketName", "Redirect用S3バケット名"
-  "WebSiteEndpoint", "Redirect用S3バケットのウェブサイトエンドポイント名"
+  "BucketName", "Redirect用S3バケット名", "デプロイした静的ウェブサイトホスティング用S3バケット名"
+  "WebSiteEndpoint", "Redirect用S3バケットのウェブサイトエンドポイント名", "静的ウェブサイトホスティング用S3バケットのウェブサイトエンドポイント"
 
 
 後片付け - ローカル -
