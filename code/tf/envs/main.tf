@@ -4,6 +4,7 @@
 # ║ acm             │ ../modules/acm                    │ invoke acm module.                                                                         ║
 # ║ s3              │ ../modules/s3                     │ invoke s3 module.                                                                          ║
 # ║ web             │ ../modules/web                    │ invoke web module.                                                                         ║
+# ║ cloudfront      │ ../modules/cloudfront             │ invoke cloudfront module.                                                                  ║
 # ╚═════════════════╧═══════════════════════════════════╧════════════════════════════════════════════════════════════════════════════════════════════╝
 
 module "acm" {
@@ -39,5 +40,14 @@ module "web" {
   alb_hostzone_id   = var.alb_hostzone_id
   alb_fqdn          = var.alb_fqdn
   alb_cert_arn      = module.acm.alb_cert_arn
+}
 
+module "cloudfront" {
+  source     = "../modules/cloudfront"
+  depends_on = [module.acm]
+
+  cloudfront_cert_arn    = module.acm.cloudfront_cert_arn
+  website_endpoint       = module.s3.website_endpoint
+  cloudfront_hostzone_id = var.cloudfront_hostzone_id
+  cloudfront_fqdn        = var.cloudfront_fqdn
 }
