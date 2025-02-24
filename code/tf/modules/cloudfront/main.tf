@@ -7,7 +7,6 @@
 
 resource "aws_cloudfront_distribution" "distribution" {
   enabled             = true
-  retain_on_delete    = true
   wait_for_deployment = true
   default_root_object = "index.html"
   origin {
