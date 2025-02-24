@@ -49,6 +49,7 @@
 # ║ cloudfront_cert                    │ aws_acm_certificate                                 │ Public Certificate for CloudFront.                    ║
 # ║ cloudfront_cert_cname_record       │ aws_route53_record                                  │ CNAME record for cloudfront certificate.              ║
 # ║ cloudfront_cert_cname_record_valid │ aws_acm_certificate_validation                      │ Verification of CNAME records for cloudfront cert.    ║
+# ║ distribution                       │ aws_cloudfront_distribution                         │ CloudFront Distribution.                              ║
 # ╚════════════════════════════════════╧═════════════════════════════════════════════════════╧═══════════════════════════════════════════════════════╝
 
 resource "aws_vpc" "vpc" {
@@ -518,3 +519,5 @@ resource "aws_acm_certificate_validation" "cloudfront_cert_cname_record_valid" {
   validation_record_fqdns = [for record in aws_route53_record.cloudfront_cert_cname_record : record.fqdn]
   provider                = aws.global
 }
+
+# resource "aws_cloudfront_distribution" "distribution" {}
