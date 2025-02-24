@@ -91,7 +91,7 @@
 
 .. code-block:: bash
 
-  terraform destroy \
+  terraform destroy --auto-approve \
   -var "alb_cert_issue_domain_name=ALB用に発行する証明書のドメイン名" \
   -var "alb_hostzone_id=ALB用Aliasレコードを登録するパブリックホストゾーンのゾーンID" \
   -var "alb_fqdn=ALB用AliasレコードのFQDN" \
