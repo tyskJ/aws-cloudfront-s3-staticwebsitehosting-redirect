@@ -13,7 +13,7 @@ import { subnetInfo } from "../../parameter";
 import { subnetKey } from "../../parameter";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
-export interface NetworkProps {
+export interface NetworkProps extends cdk.StackProps {
   pseudo: cdk.ScopedAws;
   vpc: vpcInfo;
   subnets: subnetInfo;
