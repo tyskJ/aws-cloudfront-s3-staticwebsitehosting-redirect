@@ -11,12 +11,14 @@ import { Construct } from "constructs";
 import { vpcInfo } from "../../parameter";
 import { subnetInfo } from "../../parameter";
 import { subnetKey } from "../../parameter";
+import { naclInfo } from "../../parameter";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export interface NetworkProps extends cdk.StackProps {
   pseudo: cdk.ScopedAws;
   vpc: vpcInfo;
   subnets: subnetInfo;
+  nacl: naclInfo;
 }
 
 export class Network extends Construct {
@@ -43,13 +45,17 @@ export class Network extends Construct {
       this.vpc,
       props.subnets
     );
+
+    // nacl
+    this.createNacl(this, this.vpc, this.subnetObject, props.nacl);
   }
   /*
   ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
   ║ Method (private)                                                                                                                                 ║
-  ╠═══════════════════════════╤═════════════════════════╤════════════════════════════════════════════════════════════════════════════════════════════╣
-  ║ createSubnet              │ ec2.CfnSubnet           │ Method to create Subnet for L1 constructs.                                                 ║
-  ╚═══════════════════════════╧═════════════════════════╧════════════════════════════════════════════════════════════════════════════════════════════╝
+  ╠═══════════════════════════╤═══════════════════════════════════╤══════════════════════════════════════════════════════════════════════════════════╣
+  ║ createSubnet              │ Record<subnetKey, ec2.CfnSubnet>  │ Method to create Subnet for L1 constructs.                                       ║
+  ║ createNacl                │ void                              │  Method to create Nacl for L1 constructs.                                        ║
+  ╚═══════════════════════════╧═══════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════╝
   */
   private createSubnet(
     scope: Construct,
@@ -71,5 +77,77 @@ export class Network extends Construct {
       subnetsObject[subnetDef.key] = subnet;
     }
     return subnetsObject;
+  }
+
+  private createNacl(
+    scope: Construct,
+    vpc: ec2.CfnVPC,
+    subnets: Record<subnetKey, ec2.CfnSubnet>,
+    nacls: naclInfo
+  ): void {
+    const nacl = new ec2.CfnNetworkAcl(scope, nacls.id, {
+      vpcId: vpc.attrVpcId,
+    });
+    for (const tag of nacls.tags) {
+      cdk.Tags.of(nacl).add(tag.key, tag.value);
+    }
+    for (const rules of nacls.rules) {
+      switch (rules.protocol) {
+        case -1:
+          new ec2.CfnNetworkAclEntry(scope, rules.id, {
+            networkAclId: nacl.attrId,
+            protocol: rules.protocol,
+            ruleAction: rules.ruleAction,
+            ruleNumber: rules.ruleNumber,
+            cidrBlock: rules.cidrBlock,
+            egress: rules.egress,
+          });
+          break;
+        case 6:
+        case 17:
+          if (rules.portRange === undefined) {
+            throw new Error("Port Range is required");
+          }
+          new ec2.CfnNetworkAclEntry(scope, rules.id, {
+            networkAclId: nacl.attrId,
+            protocol: rules.protocol,
+            ruleAction: rules.ruleAction,
+            ruleNumber: rules.ruleNumber,
+            cidrBlock: rules.cidrBlock,
+            egress: rules.egress,
+            portRange: {
+              from: rules.portRange.fromPort,
+              to: rules.portRange.toPort,
+            },
+          });
+          break;
+        case 1:
+          if (rules.icmp === undefined) {
+            throw new Error("ICMP Range is required");
+          }
+          new ec2.CfnNetworkAclEntry(scope, rules.id, {
+            networkAclId: nacl.attrId,
+            protocol: rules.protocol,
+            ruleAction: rules.ruleAction,
+            ruleNumber: rules.ruleNumber,
+            cidrBlock: rules.cidrBlock,
+            egress: rules.egress,
+            icmp: {
+              code: rules.icmp.code,
+              type: rules.icmp.type,
+            },
+          });
+          break;
+        default:
+          const _: never = rules.protocol;
+          throw new Error("Invalid Protocol");
+      }
+    }
+    for (const association of nacls.assocSubnets) {
+      new ec2.CfnSubnetNetworkAclAssociation(scope, association.id, {
+        subnetId: subnets[association.key].attrSubnetId,
+        networkAclId: nacl.attrId,
+      });
+    }
   }
 }

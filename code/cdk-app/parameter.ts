@@ -68,6 +68,7 @@ export type naclInfo = {
     };
   }[];
   tags: { key: string; value: string }[];
+  assocSubnets: { id: string; key: subnetKey }[];
 };
 
 export type gwInfo = "igw" | "vgw" | "tgw" | "ngw";
@@ -224,7 +225,13 @@ export const devParameter: Parameter = {
         egress: true,
       },
     ],
-    tags: [{ key: "Name", value: "dev-nacl" }],
+    tags: [{ key: "Name", value: "nacl" }],
+    assocSubnets: [
+      { id: "nacl-assoc-pub-sub-a", key: "public-a" },
+      { id: "nacl-assoc-pub-sub-c", key: "public-c" },
+      { id: "nacl-assoc-pri-sub-a", key: "private-a" },
+      { id: "nacl-assoc-pri-sub-c", key: "private-c" },
+    ],
   },
 
   rtb: {
