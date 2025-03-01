@@ -107,6 +107,32 @@ export class Network extends Construct {
     this.ec2Sg = this.createSecurityGroup(this, this.vpc, props.sgEc2);
     this.albSg = this.createSecurityGroup(this, this.vpc, props.sgAlb);
     const epSg = this.createSecurityGroup(this, this.vpc, props.sgEp);
+
+    // Security Group Ingress
+    new ec2.CfnSecurityGroupIngress(this, "httpsInSgAlb", {
+      groupId: this.albSg.attrGroupId,
+      ipProtocol: "tcp",
+      cidrIp: "0.0.0.0/0",
+      description: "HTTPS From Unrestricted",
+      fromPort: 443,
+      toPort: 443,
+    });
+    new ec2.CfnSecurityGroupIngress(this, "httpsInSgEp", {
+      groupId: epSg.attrGroupId,
+      ipProtocol: "tcp",
+      sourceSecurityGroupId: this.ec2Sg.attrGroupId,
+      description: "HTTPS From EC2 SG",
+      fromPort: 443,
+      toPort: 443,
+    });
+    new ec2.CfnSecurityGroupIngress(this, "httpInSgEc2", {
+      groupId: this.ec2Sg.attrGroupId,
+      ipProtocol: "tcp",
+      sourceSecurityGroupId: this.albSg.attrGroupId,
+      description: "HTTP From ALB SG",
+      fromPort: 80,
+      toPort: 80,
+    });
   }
   /*
   ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
