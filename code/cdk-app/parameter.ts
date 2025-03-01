@@ -133,18 +133,18 @@ export type ec2Info = {
 ╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 export interface Parameter extends cdk.StackProps {
-  AppName: string;
+  EnvName: string;
   vpc: vpcInfo;
   subnets: subnetInfo;
   nacl: naclInfo;
   rtbPub: rtbInfo;
   rtbPri: rtbInfo;
   s3GwEp: gwVpcEpInfo;
-  ec2Role: iamRoleInfo;
-  keyPair: keypairInfo;
   sgEc2: secgInfo;
   sgAlb: secgInfo;
   sgEp: secgInfo;
+  ec2Role: iamRoleInfo;
+  keyPair: keypairInfo;
   ec2: ec2Info;
 }
 
@@ -163,7 +163,7 @@ export interface Parameter extends cdk.StackProps {
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 export const devParameter: Parameter = {
-  AppName: "dev",
+  EnvName: "tokyo",
 
   vpc: {
     id: "Vpc",
@@ -292,7 +292,7 @@ export const devParameter: Parameter = {
   },
 
   ec2Role: {
-    id: "EC2Role",
+    id: "Ec2Role",
     roleName: "iam-role-ec2",
     assumed: "ec2.amazonaws.com",
     description: "EC2 Role",

@@ -44,11 +44,18 @@
 
   npm install
 
-2. CDKデプロイメント事前準備
+2. CDKデプロイメント事前準備(東京リージョン)
 ---------------------------------------------------------------------
 .. code-block:: bash
 
   cdk bootstrap --profile admin
+
+3. CDKデプロイメント事前準備(バージニア北部リージョン)
+---------------------------------------------------------------------
+.. code-block:: bash
+
+  AccountId=`aws sts get-caller-identity --query Account --profile admin --output text`
+  cdk bootstrap --profile admin ${AccountId}/us-east-1
 
 実作業 - ローカル -
 =====================================================================
@@ -56,7 +63,7 @@
 ---------------------------------------------------------------------
 .. code-block:: bash
 
-  cdk deploy \
+  cdk deploy --all \
   --context hosted_zone_id_for_alb=ALBレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_alb=ALBレコードを登録するドメイン名 \
   --context issue_domain_name_for_alb=ALB用証明書のドメイン名 \
@@ -71,7 +78,19 @@
 ---------------------------------------------------------------------
 .. code-block:: bash
 
-  cdk destroy --profile admin
+  cdk destroy --all \
+  --context hosted_zone_id_for_alb=ALBレコードを登録するホストゾーンID \
+  --context zone_apnex_name_for_alb=ALBレコードを登録するドメイン名 \
+  --context issue_domain_name_for_alb=ALB用証明書のドメイン名 \
+  --context hosted_zone_id_for_cf=CloudFrontレコードを登録するホストゾーンID \
+  --context zone_apnex_name_for_cf=CloudFrontレコードを登録するドメイン名 \
+  --context issue_domain_name_for_cf=CloudFront用証明書のドメイン名 \
+  --profile admin
+
+.. note::
+
+  * スタック削除後、 *DNS検証* で自動作成されたホストゾーンの *CNAMEレコード* は残る
+  * そのため、不要なら手動で *CNAMEレコード* を削除すること
 
 参考資料
 =====================================================================
