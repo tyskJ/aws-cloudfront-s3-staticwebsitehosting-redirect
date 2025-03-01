@@ -62,6 +62,9 @@ export class TokyoStack extends cdk.Stack {
       albSg: nw.albSg,
       subnets: nw.subnetObject,
       alb: props.alb,
+      albCert: apne1Acm.certificate,
+      albHostedZoneId: this.node.tryGetContext("hosted_zone_id_for_alb"),
+      albFqdn: this.node.tryGetContext("fqdn_for_alb"),
     });
   }
 }

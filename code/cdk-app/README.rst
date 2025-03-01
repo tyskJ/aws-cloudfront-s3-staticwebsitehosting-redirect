@@ -67,6 +67,7 @@
   --context hosted_zone_id_for_alb=ALBレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_alb=ALBレコードを登録するドメイン名 \
   --context issue_domain_name_for_alb=ALB用証明書のドメイン名 \
+  --context fqdn_for_alb=ALB用FQDN \
   --context hosted_zone_id_for_cf=CloudFrontレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_cf=CloudFrontレコードを登録するドメイン名 \
   --context issue_domain_name_for_cf=CloudFront用証明書のドメイン名 \
@@ -82,6 +83,7 @@
   --context hosted_zone_id_for_alb=ALBレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_alb=ALBレコードを登録するドメイン名 \
   --context issue_domain_name_for_alb=ALB用証明書のドメイン名 \
+  --context fqdn_for_alb=ALB用FQDN \
   --context hosted_zone_id_for_cf=CloudFrontレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_cf=CloudFrontレコードを登録するドメイン名 \
   --context issue_domain_name_for_cf=CloudFront用証明書のドメイン名 \

@@ -9,6 +9,8 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as acm from "aws-cdk-lib/aws-certificatemanager";
+import * as route53 from "aws-cdk-lib/aws-route53";
 import { subnetKey } from "../../parameter";
 import { targetgrpInfo } from "../../parameter";
 import { albInfo } from "../../parameter";
@@ -20,6 +22,9 @@ export interface AlbProps extends cdk.StackProps {
   albSg: ec2.CfnSecurityGroup;
   subnets: Record<subnetKey, ec2.CfnSubnet>;
   alb: albInfo;
+  albCert: acm.Certificate;
+  albHostedZoneId: string;
+  albFqdn: string;
 }
 
 export class Alb extends Construct {
@@ -62,5 +67,31 @@ export class Alb extends Construct {
     for (const tag of props.alb.tags) {
       cdk.Tags.of(alb).add(tag.key, tag.value);
     }
+
+    // Listener
+    new elbv2.CfnListener(this, "Listener", {
+      protocol: "HTTPS",
+      port: 443,
+      loadBalancerArn: alb.attrLoadBalancerArn,
+      certificates: [{ certificateArn: props.albCert.certificateArn }],
+      defaultActions: [
+        {
+          type: "forward",
+          targetGroupArn: targetGroup.attrTargetGroupArn,
+        },
+      ],
+    });
+
+    // Alias RecordSet
+    new route53.CfnRecordSet(this, "AlbRecordSet", {
+      name: props.albFqdn,
+      hostedZoneId: props.albHostedZoneId,
+      type: "A",
+      aliasTarget: {
+        dnsName: alb.attrDnsName,
+        hostedZoneId: alb.attrCanonicalHostedZoneId,
+        evaluateTargetHealth: true,
+      },
+    });
   }
 }
