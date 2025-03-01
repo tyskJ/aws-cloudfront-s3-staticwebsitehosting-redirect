@@ -131,6 +131,8 @@ export type keypairInfo = {
 export type ec2Info = {
   id: string;
   instanceType: string;
+  deviceName: string;
+  subnetKey: subnetKey;
   apiTerm: boolean;
   ebsOpt: boolean;
   volSize: number;
@@ -348,19 +350,21 @@ export const devParameter: Parameter = {
 
   keyPair: {
     id: "KeyPair",
-    keyName: "dev-keypair",
+    keyName: "keypair",
     keyType: "rsa",
     keyFormat: "pem",
     removalPolicy: true,
-    tags: [{ key: "Name", value: "dev-keypair" }],
+    tags: [{ key: "Name", value: "keypair" }],
   },
 
   ec2: {
     id: "EC2Instance",
     instanceType: "t3.large",
+    deviceName: "/dev/xvda",
+    subnetKey: "private-a",
     apiTerm: false,
     ebsOpt: false,
     volSize: 30,
-    tags: [{ key: "Name", value: "dev-ec2" }],
+    tags: [{ key: "Name", value: "ec2" }],
   },
 };
