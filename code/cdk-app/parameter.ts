@@ -20,9 +20,9 @@ import * as cdk from "aws-cdk-lib";
 ║ gwInfo          │ Type defined Gateway.                                                                                                            ║
 ║ rtbInfo         │ Type defined L1 Construct RouteTable configuration information.                                                                  ║
 ║ gwVpcEpInfo     │ Type defined L1 Construct VPC Gateway Endpoint configuration information.                                                        ║
+║ secgInfo        │ Type defined L2 Construct SecurityGroup.                                                                                         ║
 ║ iamRoleInfo     │ Type defined L2 Construct IAM Role information.                                                                                  ║
 ║ keypairInfo     │ Type defined L1 Construct KeyPair.                                                                                               ║
-║ secgInfo        │ Type defined L2 Construct SecurityGroup.                                                                                         ║
 ║ ec2Info         │ Type defined L1 Construct EC2 Instance.                                                                                          ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
@@ -91,6 +91,13 @@ export type gwVpcEpInfo = {
   service: string;
 };
 
+export type secgInfo = {
+  id: string;
+  sgName: string;
+  description: string;
+  tags: { key: string; value: string }[];
+};
+
 export type iamRoleInfo = {
   id: string;
   roleName: string;
@@ -108,13 +115,6 @@ export type keypairInfo = {
   keyType: string;
   keyFormat: string;
   removalPolicy: boolean;
-  tags: { key: string; value: string }[];
-};
-
-export type secgInfo = {
-  id: string;
-  sgName: string;
-  description: string;
   tags: { key: string; value: string }[];
 };
 
@@ -142,7 +142,9 @@ export interface Parameter extends cdk.StackProps {
   s3GwEp: gwVpcEpInfo;
   ec2Role: iamRoleInfo;
   keyPair: keypairInfo;
-  secg: secgInfo;
+  sgEc2: secgInfo;
+  sgAlb: secgInfo;
+  sgEp: secgInfo;
   ec2: ec2Info;
 }
 
@@ -156,7 +158,7 @@ export interface Parameter extends cdk.StackProps {
 ║ ec2Role         │ EC2 Role.                                                                                                                        ║
 ║ ssmPolicy       │ SSM Start SSH Session Policy.                                                                                                    ║
 ║ keyPair         │ KeyPair.                                                                                                                         ║
-║ secg            │ SecurityGroup.                                                                                                                   ║
+║ sgEc2           │ SecurityGroup for EC2.                                                                                                           ║
 ║ ec2             │ EC2 Instance.                                                                                                                    ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
@@ -268,6 +270,27 @@ export const devParameter: Parameter = {
     service: "s3",
   },
 
+  sgEc2: {
+    id: "secg-ec2",
+    sgName: "secg-ec2",
+    description: "SG for EC2",
+    tags: [{ key: "Name", value: "secg-ec2" }],
+  },
+
+  sgAlb: {
+    id: "secg-alb",
+    sgName: "secg-alb",
+    description: "SG for ALB",
+    tags: [{ key: "Name", value: "secg-alb" }],
+  },
+
+  sgEp: {
+    id: "secg-ep",
+    sgName: "secg-ep",
+    description: "SG for Endpoint",
+    tags: [{ key: "Name", value: "secg-ep" }],
+  },
+
   ec2Role: {
     id: "EC2Role",
     roleName: "iam-role-ec2",
@@ -290,13 +313,6 @@ export const devParameter: Parameter = {
     keyFormat: "pem",
     removalPolicy: true,
     tags: [{ key: "Name", value: "dev-keypair" }],
-  },
-
-  secg: {
-    id: "SecurityGroup",
-    sgName: "dev-sg",
-    description: "SG for EC2",
-    tags: [{ key: "Name", value: "dev-sg" }],
   },
 
   ec2: {

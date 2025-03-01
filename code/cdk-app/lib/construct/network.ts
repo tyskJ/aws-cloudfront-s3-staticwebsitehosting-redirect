@@ -14,6 +14,7 @@ import { subnetKey } from "../../parameter";
 import { naclInfo } from "../../parameter";
 import { rtbInfo } from "../../parameter";
 import { gwVpcEpInfo } from "../../parameter";
+import { secgInfo } from "../../parameter";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export interface NetworkProps extends cdk.StackProps {
@@ -24,6 +25,9 @@ export interface NetworkProps extends cdk.StackProps {
   rtbPub: rtbInfo;
   rtbPri: rtbInfo;
   s3GwEp: gwVpcEpInfo;
+  sgEc2: secgInfo;
+  sgAlb: secgInfo;
+  sgEp: secgInfo;
 }
 
 export interface GwProps {
@@ -34,6 +38,8 @@ export interface GwProps {
 export class Network extends Construct {
   public readonly vpc: ec2.CfnVPC;
   public readonly subnetObject: Record<subnetKey, ec2.CfnSubnet>;
+  public readonly ec2Sg: ec2.CfnSecurityGroup;
+  public readonly albSg: ec2.CfnSecurityGroup;
 
   constructor(scope: Construct, id: string, props: NetworkProps) {
     super(scope, id);
@@ -96,6 +102,11 @@ export class Network extends Construct {
       serviceName: `com.amazonaws.${props.pseudo.region}.${props.s3GwEp.service}`,
       routeTableIds: [privateRtb.attrRouteTableId],
     });
+
+    // Security Group
+    this.ec2Sg = this.createSecurityGroup(this, this.vpc, props.sgEc2);
+    this.albSg = this.createSecurityGroup(this, this.vpc, props.sgAlb);
+    const epSg = this.createSecurityGroup(this, this.vpc, props.sgEp);
   }
   /*
   ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -104,6 +115,7 @@ export class Network extends Construct {
   ║ createSubnet              │ Record<subnetKey, ec2.CfnSubnet>  │ Method to create Subnet for L1 constructs.                                       ║
   ║ createNacl                │ void                              │ Method to create Nacl for L1 constructs.                                         ║
   ║ createRouteTable          │ ec2.CfnRouteTable                 │ Method to create RouteTable for L1 constructs.                                   ║
+  ║ createSecurityGroup       │ ec2.CfnSecurityGroup              │ Method to create SecurityGroup for L1 constructs.                                ║
   ╚═══════════════════════════╧═══════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════╝
   */
   private createSubnet(
@@ -237,5 +249,21 @@ export class Network extends Construct {
       });
     }
     return routeTable;
+  }
+
+  private createSecurityGroup(
+    scope: Construct,
+    vpc: ec2.CfnVPC,
+    sgs: secgInfo
+  ): ec2.CfnSecurityGroup {
+    const sg = new ec2.CfnSecurityGroup(scope, sgs.id, {
+      vpcId: vpc.attrVpcId,
+      groupDescription: sgs.description,
+      groupName: sgs.sgName,
+    });
+    for (const tag of sgs.tags) {
+      cdk.Tags.of(sg).add(tag.key, tag.value);
+    }
+    return sg;
   }
 }
