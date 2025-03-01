@@ -63,7 +63,7 @@ export class Ec2 extends Construct {
     );
     const userData = ec2.UserData.forLinux({ shebang: "#!/bin/bash" });
     userData.addCommands(...script.split("\n"));
-    const ec2Instance = new ec2.CfnInstance(this, props.ec2.id, {
+    this.ec2Instance = new ec2.CfnInstance(this, props.ec2.id, {
       instanceType: props.ec2.instanceType,
       keyName: keyPair.keyName,
       iamInstanceProfile: instanceProfile.ref,
@@ -86,7 +86,7 @@ export class Ec2 extends Construct {
       ],
     });
     for (const tag of props.ec2.tags) {
-      cdk.Tags.of(ec2Instance).add(tag.key, tag.value);
+      cdk.Tags.of(this.ec2Instance).add(tag.key, tag.value);
     }
   }
 }
