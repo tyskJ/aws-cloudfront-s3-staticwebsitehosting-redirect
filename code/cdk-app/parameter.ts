@@ -263,9 +263,9 @@ export const devParameter: Parameter = {
 
   s3GwEp: {
     type: "Gateway",
-    id: "dev-s3-gw",
-    name: "dev-s3-gw",
-    service: "com.amazonaws.ap-northeast-1.s3",
+    id: "s3-gw",
+    name: "s3-gw",
+    service: "s3",
   },
 
   ec2Role: {

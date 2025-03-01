@@ -21,6 +21,7 @@ export class TokyoStack extends cdk.Stack {
       nacl: props.nacl,
       rtbPub: props.rtbPub,
       rtbPri: props.rtbPri,
+      s3GwEp: props.s3GwEp,
     });
   }
 }

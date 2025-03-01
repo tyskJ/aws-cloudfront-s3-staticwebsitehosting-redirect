@@ -13,6 +13,7 @@ import { subnetInfo } from "../../parameter";
 import { subnetKey } from "../../parameter";
 import { naclInfo } from "../../parameter";
 import { rtbInfo } from "../../parameter";
+import { gwVpcEpInfo } from "../../parameter";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export interface NetworkProps extends cdk.StackProps {
@@ -22,6 +23,7 @@ export interface NetworkProps extends cdk.StackProps {
   nacl: naclInfo;
   rtbPub: rtbInfo;
   rtbPri: rtbInfo;
+  s3GwEp: gwVpcEpInfo;
 }
 
 export interface GwProps {
@@ -87,6 +89,13 @@ export class Network extends Construct {
       this.subnetObject,
       {}
     );
+
+    // S3 Gateway Endpoint
+    const s3Vpce = new ec2.CfnVPCEndpoint(this, props.s3GwEp.id, {
+      vpcId: this.vpc.attrVpcId,
+      serviceName: `com.amazonaws.${props.pseudo.region}.${props.s3GwEp.service}`,
+      routeTableIds: [privateRtb.attrRouteTableId],
+    });
   }
   /*
   ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -108,7 +117,7 @@ export class Network extends Construct {
       const subnet = new ec2.CfnSubnet(scope, subnetDef.id, {
         vpcId: vpc.attrVpcId,
         cidrBlock: subnetDef.cidrBlock,
-        availabilityZone: pseudo.region + subnetDef.availabilityZone,
+        availabilityZone: `${pseudo.region}${subnetDef.availabilityZone}`,
         mapPublicIpOnLaunch: subnetDef.mapPublicIpOnLaunch,
       });
       for (const tag of subnetDef.tags) {
