@@ -56,7 +56,10 @@
 ---------------------------------------------------------------------
 .. code-block:: bash
 
-  cdk deploy --profile admin
+  cdk deploy \
+  --context zone_apnex_name_for_alb=ALBのレコードを登録するドメイン名 \
+  --context issue_domain_name_for_alb=ALB用証明書のドメイン名 \
+  --profile admin
 
 後片付け - ローカル -
 =====================================================================
