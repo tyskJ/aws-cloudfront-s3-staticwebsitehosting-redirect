@@ -12,6 +12,7 @@ import { vpcInfo } from "../../parameter";
 import { subnetInfo } from "../../parameter";
 import { subnetKey } from "../../parameter";
 import { naclInfo } from "../../parameter";
+import { rtbInfo } from "../../parameter";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export interface NetworkProps extends cdk.StackProps {
@@ -19,6 +20,13 @@ export interface NetworkProps extends cdk.StackProps {
   vpc: vpcInfo;
   subnets: subnetInfo;
   nacl: naclInfo;
+  rtbPub: rtbInfo;
+  rtbPri: rtbInfo;
+}
+
+export interface GwProps {
+  igwId?: string;
+  ngwId?: string;
 }
 
 export class Network extends Construct {
@@ -48,13 +56,45 @@ export class Network extends Construct {
 
     // nacl
     this.createNacl(this, this.vpc, this.subnetObject, props.nacl);
+
+    // Internet Gateway
+    const igw = new ec2.CfnInternetGateway(this, "igw", {
+      tags: [
+        {
+          key: "Name",
+          value: "igw",
+        },
+      ],
+    });
+    const igwassoc = new ec2.CfnVPCGatewayAttachment(this, "igw-attach", {
+      vpcId: this.vpc.attrVpcId,
+      internetGatewayId: igw.attrInternetGatewayId,
+    });
+
+    // Route Table
+    const publicRtb = this.createRouteTable(
+      this,
+      this.vpc,
+      props.rtbPub,
+      this.subnetObject,
+      { igwId: igw.attrInternetGatewayId }
+    );
+    publicRtb.addDependency(igwassoc);
+    const privateRtb = this.createRouteTable(
+      this,
+      this.vpc,
+      props.rtbPri,
+      this.subnetObject,
+      {}
+    );
   }
   /*
   ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
   ║ Method (private)                                                                                                                                 ║
   ╠═══════════════════════════╤═══════════════════════════════════╤══════════════════════════════════════════════════════════════════════════════════╣
   ║ createSubnet              │ Record<subnetKey, ec2.CfnSubnet>  │ Method to create Subnet for L1 constructs.                                       ║
-  ║ createNacl                │ void                              │  Method to create Nacl for L1 constructs.                                        ║
+  ║ createNacl                │ void                              │ Method to create Nacl for L1 constructs.                                         ║
+  ║ createRouteTable          │ ec2.CfnRouteTable                 │ Method to create RouteTable for L1 constructs.                                   ║
   ╚═══════════════════════════╧═══════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════╝
   */
   private createSubnet(
@@ -149,5 +189,44 @@ export class Network extends Construct {
         networkAclId: nacl.attrId,
       });
     }
+  }
+
+  private createRouteTable(
+    scope: Construct,
+    vpc: ec2.CfnVPC,
+    rtbs: rtbInfo,
+    subnets: Record<subnetKey, ec2.CfnSubnet>,
+    gwId: GwProps
+  ): ec2.CfnRouteTable {
+    const routeTable = new ec2.CfnRouteTable(scope, rtbs.id, {
+      vpcId: vpc.attrVpcId,
+    });
+    for (const tag of rtbs.tags) {
+      cdk.Tags.of(routeTable).add(tag.key, tag.value);
+    }
+    if (rtbs.routes) {
+      for (const route of rtbs.routes) {
+        switch (route.type) {
+          case "igw":
+            for (const dest of route.destinations) {
+              const route = new ec2.CfnRoute(scope, dest.id, {
+                routeTableId: routeTable.attrRouteTableId,
+                destinationCidrBlock: dest.value,
+                gatewayId: gwId.igwId,
+              });
+            }
+            break;
+          default:
+            throw new Error("Invalid Route Type");
+        }
+      }
+    }
+    for (const assocSub of rtbs.assocSubnets) {
+      new ec2.CfnSubnetRouteTableAssociation(scope, assocSub.id, {
+        routeTableId: routeTable.attrRouteTableId,
+        subnetId: subnets[assocSub.key].attrSubnetId,
+      });
+    }
+    return routeTable;
   }
 }

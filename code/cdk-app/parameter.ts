@@ -76,12 +76,12 @@ export type gwInfo = "igw" | "vgw" | "tgw" | "ngw";
 export type rtbInfo = {
   id: string;
   name: string;
-  routes: {
+  routes?: {
     type: gwInfo;
-    id: string;
-    destinations: string[];
+    destinations: { id: string; value: string }[];
   }[];
   tags: { key: string; value: string }[];
+  assocSubnets: { id: string; key: subnetKey }[];
 };
 
 export type gwVpcEpInfo = {
@@ -137,7 +137,8 @@ export interface Parameter extends cdk.StackProps {
   vpc: vpcInfo;
   subnets: subnetInfo;
   nacl: naclInfo;
-  rtb: rtbInfo;
+  rtbPub: rtbInfo;
+  rtbPri: rtbInfo;
   s3GwEp: gwVpcEpInfo;
   ec2Role: iamRoleInfo;
   keyPair: keypairInfo;
@@ -234,17 +235,30 @@ export const devParameter: Parameter = {
     ],
   },
 
-  rtb: {
+  rtbPub: {
     id: "rtb-public-subnet",
-    name: "dev-public-rtb",
+    name: "public-rtb",
     routes: [
       {
         type: "igw",
-        id: "rtb-private-subnet-for-out",
-        destinations: ["0.0.0.0/0"],
+        destinations: [{ id: "out-route-1", value: "0.0.0.0/0" }],
       },
     ],
-    tags: [{ key: "Name", value: "dev-public-rtb" }],
+    tags: [{ key: "Name", value: "public-rtb" }],
+    assocSubnets: [
+      { id: "rtb-assoc-pub-sub-a", key: "public-a" },
+      { id: "rtb-assoc-pub-sub-c", key: "public-c" },
+    ],
+  },
+
+  rtbPri: {
+    id: "rtb-private-subnet",
+    name: "private-rtb",
+    tags: [{ key: "Name", value: "private-rtb" }],
+    assocSubnets: [
+      { id: "rtb-assoc-pri-sub-a", key: "private-a" },
+      { id: "rtb-assoc-pri-sub-c", key: "private-c" },
+    ],
   },
 
   s3GwEp: {
