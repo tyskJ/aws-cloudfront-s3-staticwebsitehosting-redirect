@@ -5,6 +5,7 @@ import { Network } from "../construct/network";
 import { Acm } from "../construct/acm";
 import { Iam } from "../construct/iam";
 import { Ec2 } from "../construct/ec2";
+import { Alb } from "../construct/alb";
 
 export class TokyoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Parameter) {
@@ -52,5 +53,14 @@ export class TokyoStack extends cdk.Stack {
       ec2: props.ec2,
     });
     ec2.node.addDependency(nw);
+
+    // ALB & Route 53 Record
+    const alb = new Alb(this, "Alb", {
+      targetGrp: props.targetGrp,
+      ec2Instance: ec2.ec2Instance,
+      vpc: nw.vpc,
+      albSg: nw.albSg,
+      subnets: nw.subnetObject,
+    });
   }
 }

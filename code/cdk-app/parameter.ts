@@ -25,6 +25,7 @@ import * as cdk from "aws-cdk-lib";
 ║ inVpcEpInfo     │ Type defined L1 Construct VPC Interface Endpoint configuration information.                                                      ║
 ║ keypairInfo     │ Type defined L1 Construct KeyPair.                                                                                               ║
 ║ ec2Info         │ Type defined L1 Construct EC2 Instance.                                                                                          ║
+║ targetgrpInfo   │ Type defined L1 Construct ALB TargetGroup.                                                                                       ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 export type vpcInfo = {
@@ -139,6 +140,23 @@ export type ec2Info = {
   tags: { key: string; value: string }[];
 };
 
+export type targetgrpInfo = {
+  id: string;
+  name: string;
+  protocol: string;
+  port: number;
+  healthCheckEnabled: boolean;
+  healthCheckIntervalSeconds: number;
+  healthCheckPath: string;
+  healthCheckPort: string;
+  healthCheckProtocol: string;
+  healthCheckTimeoutSeconds: number;
+  healthyThresholdCount: number;
+  unhealthyThresholdCount: number;
+  matcherCode: string;
+  tags: { key: string; value: string }[];
+};
+
 /*
 ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ Interface Parameter                                                                                                                                ║
@@ -161,20 +179,32 @@ export interface Parameter extends cdk.StackProps {
   ec2MessagesEp: inVpcEpInfo;
   keyPair: keypairInfo;
   ec2: ec2Info;
+  targetGrp: targetgrpInfo;
 }
 
 /*
 ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ devParameter                                                                                                                                       ║
 ╠═════════════════╤══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ AppName         │ common tag value.                                                                                                                ║
+║ EnvName         │ common tag value.                                                                                                                ║
 ║ vpc             │ VPC.                                                                                                                             ║
 ║ subnets         │ Subnets.                                                                                                                         ║
-║ ec2Role         │ EC2 Role.                                                                                                                        ║
-║ ssmPolicy       │ SSM Start SSH Session Policy.                                                                                                    ║
-║ keyPair         │ KeyPair.                                                                                                                         ║
+║ nacl            │ Network ACL.                                                                                                                     ║
+║ rtbPub          │ Public Route Table.                                                                                                              ║
+║ rtbPri          │ Private Route Table.                                                                                                             ║
+║ s3GwEp          │ S3 Gateway Endpoint.                                                                                                             ║
 ║ sgEc2           │ SecurityGroup for EC2.                                                                                                           ║
+║ sgAlb           │ SecurityGroup for ALB.                                                                                                           ║
+║ sgEp            │ SecurityGroup for EP.                                                                                                            ║
+║ ec2Role         │ EC2 Role.                                                                                                                        ║
+║ ssmEp           │ SSM VPC Endpoint.                                                                                                                ║
+║ ssmMessagesEp   │ SSM Messages VPC Endpoint.                                                                                                       ║
+║ ec2MessagesEp   │ EC2 Messages VPC Endpoint.                                                                                                       ║
+║ keyPair         │ KeyPair.                                                                                                                         ║
 ║ ec2             │ EC2 Instance.                                                                                                                    ║
+║ targetGrp       │ TargetGroup for ALB.                                                                                                             ║
+║             │ .                                                                                                                     ║
+║             │ .                                                                                                                     ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 export const devParameter: Parameter = {
@@ -366,5 +396,22 @@ export const devParameter: Parameter = {
     ebsOpt: false,
     volSize: 30,
     tags: [{ key: "Name", value: "ec2" }],
+  },
+
+  targetGrp: {
+    id: "TargetGroupForAlb",
+    name: "targetGroup",
+    protocol: "HTTP",
+    port: 80,
+    healthCheckEnabled: true,
+    healthCheckIntervalSeconds: 10,
+    healthCheckPath: "/index.html",
+    healthCheckPort: "80",
+    healthCheckProtocol: "HTTP",
+    healthCheckTimeoutSeconds: 5,
+    healthyThresholdCount: 3,
+    unhealthyThresholdCount: 3,
+    matcherCode: "200",
+    tags: [{ key: "Name", value: "targetGroup" }],
   },
 };
