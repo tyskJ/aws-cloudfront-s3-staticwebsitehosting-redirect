@@ -9,8 +9,9 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { targetgrpInfo } from "../../parameter";
 import { subnetKey } from "../../parameter";
+import { targetgrpInfo } from "../../parameter";
+import { albInfo } from "../../parameter";
 
 export interface AlbProps extends cdk.StackProps {
   targetGrp: targetgrpInfo;
@@ -18,12 +19,14 @@ export interface AlbProps extends cdk.StackProps {
   vpc: ec2.CfnVPC;
   albSg: ec2.CfnSecurityGroup;
   subnets: Record<subnetKey, ec2.CfnSubnet>;
+  alb: albInfo;
 }
 
 export class Alb extends Construct {
   constructor(scope: Construct, id: string, props: AlbProps) {
     super(scope, id);
 
+    // TargetGroup
     const targetGroup = new elbv2.CfnTargetGroup(this, props.targetGrp.id, {
       name: props.targetGrp.name,
       vpcId: props.vpc.attrVpcId,
@@ -42,6 +45,22 @@ export class Alb extends Construct {
     });
     for (const tag of props.targetGrp.tags) {
       cdk.Tags.of(targetGroup).add(tag.key, tag.value);
+    }
+
+    // ALB
+    const subnetids: string[] = [];
+    props.alb.mapSubnets.forEach((id) => {
+      subnetids.push(props.subnets[id].attrSubnetId);
+    });
+    const alb = new elbv2.CfnLoadBalancer(this, props.alb.id, {
+      name: props.alb.name,
+      scheme: props.alb.scheme,
+      securityGroups: [props.albSg.attrGroupId],
+      subnets: subnetids,
+      type: props.alb.type,
+    });
+    for (const tag of props.alb.tags) {
+      cdk.Tags.of(alb).add(tag.key, tag.value);
     }
   }
 }

@@ -26,6 +26,7 @@ import * as cdk from "aws-cdk-lib";
 ║ keypairInfo     │ Type defined L1 Construct KeyPair.                                                                                               ║
 ║ ec2Info         │ Type defined L1 Construct EC2 Instance.                                                                                          ║
 ║ targetgrpInfo   │ Type defined L1 Construct ALB TargetGroup.                                                                                       ║
+║ albInfo         │ Type defined L1 Construct ALB.                                                                                                   ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 export type vpcInfo = {
@@ -157,6 +158,15 @@ export type targetgrpInfo = {
   tags: { key: string; value: string }[];
 };
 
+export type albInfo = {
+  id: string;
+  name: string;
+  scheme: string;
+  type: string;
+  mapSubnets: subnetKey[];
+  tags: { key: string; value: string }[];
+};
+
 /*
 ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ Interface Parameter                                                                                                                                ║
@@ -180,6 +190,7 @@ export interface Parameter extends cdk.StackProps {
   keyPair: keypairInfo;
   ec2: ec2Info;
   targetGrp: targetgrpInfo;
+  alb: albInfo;
 }
 
 /*
@@ -203,6 +214,7 @@ export interface Parameter extends cdk.StackProps {
 ║ keyPair         │ KeyPair.                                                                                                                         ║
 ║ ec2             │ EC2 Instance.                                                                                                                    ║
 ║ targetGrp       │ TargetGroup for ALB.                                                                                                             ║
+║ alb             │ ALB.                                                                                                                             ║
 ║             │ .                                                                                                                     ║
 ║             │ .                                                                                                                     ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -413,5 +425,14 @@ export const devParameter: Parameter = {
     unhealthyThresholdCount: 3,
     matcherCode: "200",
     tags: [{ key: "Name", value: "targetGroup" }],
+  },
+
+  alb: {
+    id: "Alb",
+    name: "alb",
+    scheme: "internet-facing",
+    type: "application",
+    mapSubnets: ["public-a", "public-c"],
+    tags: [{ key: "Name", value: "alb" }],
   },
 };
