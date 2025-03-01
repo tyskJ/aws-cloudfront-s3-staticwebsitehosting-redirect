@@ -209,10 +209,10 @@ export const devParameter: Parameter = {
   ],
 
   nacl: {
-    id: "nacl-open",
+    id: "NaclOpen",
     rules: [
       {
-        id: "nacl-open-rule-in-100",
+        id: "NaclOpenRuleIn100",
         protocol: -1,
         ruleAction: "allow",
         ruleNumber: 100,
@@ -220,7 +220,7 @@ export const devParameter: Parameter = {
         egress: false,
       },
       {
-        id: "nacl-open-rule-out-100",
+        id: "NaclOpenRuleOut100",
         protocol: -1,
         ruleAction: "allow",
         ruleNumber: 100,
@@ -230,62 +230,62 @@ export const devParameter: Parameter = {
     ],
     tags: [{ key: "Name", value: "nacl" }],
     assocSubnets: [
-      { id: "nacl-assoc-pub-sub-a", key: "public-a" },
-      { id: "nacl-assoc-pub-sub-c", key: "public-c" },
-      { id: "nacl-assoc-pri-sub-a", key: "private-a" },
-      { id: "nacl-assoc-pri-sub-c", key: "private-c" },
+      { id: "NaclAssocPubSubA", key: "public-a" },
+      { id: "NaclAssocPubSubC", key: "public-c" },
+      { id: "NaclAssocPriSubA", key: "private-a" },
+      { id: "NaclAssocPriSubC", key: "private-c" },
     ],
   },
 
   rtbPub: {
-    id: "rtb-public-subnet",
+    id: "RtbPublicSubnet",
     name: "public-rtb",
     routes: [
       {
         type: "igw",
-        destinations: [{ id: "out-route-1", value: "0.0.0.0/0" }],
+        destinations: [{ id: "OutRoute1", value: "0.0.0.0/0" }],
       },
     ],
     tags: [{ key: "Name", value: "public-rtb" }],
     assocSubnets: [
-      { id: "rtb-assoc-pub-sub-a", key: "public-a" },
-      { id: "rtb-assoc-pub-sub-c", key: "public-c" },
+      { id: "RtbAssocPubSubA", key: "public-a" },
+      { id: "RtbAssocPubSubC", key: "public-c" },
     ],
   },
 
   rtbPri: {
-    id: "rtb-private-subnet",
+    id: "RtbPrivateSubnet",
     name: "private-rtb",
     tags: [{ key: "Name", value: "private-rtb" }],
     assocSubnets: [
-      { id: "rtb-assoc-pri-sub-a", key: "private-a" },
-      { id: "rtb-assoc-pri-sub-c", key: "private-c" },
+      { id: "RtbAssocPriSubA", key: "private-a" },
+      { id: "RtbAssocPriSubC", key: "private-c" },
     ],
   },
 
   s3GwEp: {
     type: "Gateway",
-    id: "s3-gw",
+    id: "S3Gw",
     name: "s3-gw",
     service: "s3",
   },
 
   sgEc2: {
-    id: "secg-ec2",
+    id: "SecgEc2",
     sgName: "secg-ec2",
     description: "SG for EC2",
     tags: [{ key: "Name", value: "secg-ec2" }],
   },
 
   sgAlb: {
-    id: "secg-alb",
+    id: "SecgAlb",
     sgName: "secg-alb",
     description: "SG for ALB",
     tags: [{ key: "Name", value: "secg-alb" }],
   },
 
   sgEp: {
-    id: "secg-ep",
+    id: "SecgEp",
     sgName: "secg-ep",
     description: "SG for Endpoint",
     tags: [{ key: "Name", value: "secg-ep" }],
