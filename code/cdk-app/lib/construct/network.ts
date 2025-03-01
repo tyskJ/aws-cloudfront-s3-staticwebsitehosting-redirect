@@ -15,6 +15,7 @@ import { naclInfo } from "../../parameter";
 import { rtbInfo } from "../../parameter";
 import { gwVpcEpInfo } from "../../parameter";
 import { secgInfo } from "../../parameter";
+import { inVpcEpInfo } from "../../parameter";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export interface NetworkProps extends cdk.StackProps {
@@ -28,6 +29,9 @@ export interface NetworkProps extends cdk.StackProps {
   sgEc2: secgInfo;
   sgAlb: secgInfo;
   sgEp: secgInfo;
+  ssmEp: inVpcEpInfo;
+  ssmMessagesEp: inVpcEpInfo;
+  ec2MessagesEp: inVpcEpInfo;
 }
 
 export interface GwProps {
@@ -133,6 +137,32 @@ export class Network extends Construct {
       fromPort: 80,
       toPort: 80,
     });
+
+    // Interface Endpoint
+    this.createInterfaceEndpoint(
+      this,
+      props.pseudo,
+      this.vpc,
+      this.subnetObject,
+      [epSg.attrGroupId],
+      props.ssmEp
+    );
+    this.createInterfaceEndpoint(
+      this,
+      props.pseudo,
+      this.vpc,
+      this.subnetObject,
+      [epSg.attrGroupId],
+      props.ssmMessagesEp
+    );
+    this.createInterfaceEndpoint(
+      this,
+      props.pseudo,
+      this.vpc,
+      this.subnetObject,
+      [epSg.attrGroupId],
+      props.ec2MessagesEp
+    );
   }
   /*
   ╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -142,6 +172,7 @@ export class Network extends Construct {
   ║ createNacl                │ void                              │ Method to create Nacl for L1 constructs.                                         ║
   ║ createRouteTable          │ ec2.CfnRouteTable                 │ Method to create RouteTable for L1 constructs.                                   ║
   ║ createSecurityGroup       │ ec2.CfnSecurityGroup              │ Method to create SecurityGroup for L1 constructs.                                ║
+  ║ createInterfaceEndpoint   │ ec2.CfnVPCEndpoint                │ Method to create Interface Endpoint for L1 constructs.                           ║
   ╚═══════════════════════════╧═══════════════════════════════════╧══════════════════════════════════════════════════════════════════════════════════╝
   */
   private createSubnet(
@@ -291,5 +322,30 @@ export class Network extends Construct {
       cdk.Tags.of(sg).add(tag.key, tag.value);
     }
     return sg;
+  }
+
+  private createInterfaceEndpoint(
+    scope: Construct,
+    pseudo: cdk.ScopedAws,
+    vpc: ec2.CfnVPC,
+    subnets: Record<subnetKey, ec2.CfnSubnet>,
+    sgids: string[],
+    ep: inVpcEpInfo
+  ) {
+    const subnetids: string[] = [];
+    ep.mapSubnets.forEach((id) => {
+      subnetids.push(subnets[id].attrSubnetId);
+    });
+    const endpoint = new ec2.CfnVPCEndpoint(scope, ep.id, {
+      vpcId: vpc.attrVpcId,
+      privateDnsEnabled: ep.privateDnsEnable,
+      securityGroupIds: sgids,
+      subnetIds: subnetids,
+      vpcEndpointType: ep.endPointType,
+      serviceName: `com.amazonaws.${pseudo.region}.${ep.serviceName}`,
+    });
+    for (const tag of ep.tags) {
+      cdk.Tags.of(endpoint).add(tag.key, tag.value);
+    }
   }
 }

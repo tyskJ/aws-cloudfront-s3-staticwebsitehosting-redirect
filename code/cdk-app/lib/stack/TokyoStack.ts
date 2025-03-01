@@ -24,6 +24,9 @@ export class TokyoStack extends cdk.Stack {
       sgEc2: props.sgEc2,
       sgAlb: props.sgAlb,
       sgEp: props.sgEp,
+      ssmEp: props.ssmEp,
+      ssmMessagesEp: props.ssmMessagesEp,
+      ec2MessagesEp: props.ec2MessagesEp,
     });
 
     // ACM (ap-northeast-1)

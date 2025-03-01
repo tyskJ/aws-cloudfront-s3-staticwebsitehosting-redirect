@@ -22,6 +22,7 @@ import * as cdk from "aws-cdk-lib";
 ║ gwVpcEpInfo     │ Type defined L1 Construct VPC Gateway Endpoint configuration information.                                                        ║
 ║ secgInfo        │ Type defined L2 Construct SecurityGroup.                                                                                         ║
 ║ iamRoleInfo     │ Type defined L2 Construct IAM Role information.                                                                                  ║
+║ inVpcEpInfo     │ Type defined L1 Construct VPC Interface Endpoint configuration information.                                                      ║
 ║ keypairInfo     │ Type defined L1 Construct KeyPair.                                                                                               ║
 ║ ec2Info         │ Type defined L1 Construct EC2 Instance.                                                                                          ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
@@ -109,6 +110,15 @@ export type iamRoleInfo = {
   tags: { key: string; value: string }[];
 };
 
+export type inVpcEpInfo = {
+  id: string;
+  serviceName: string;
+  endPointType: string;
+  privateDnsEnable: boolean;
+  mapSubnets: subnetKey[];
+  tags: { key: string; value: string }[];
+};
+
 export type keypairInfo = {
   id: string;
   keyName: string;
@@ -144,6 +154,9 @@ export interface Parameter extends cdk.StackProps {
   sgAlb: secgInfo;
   sgEp: secgInfo;
   ec2Role: iamRoleInfo;
+  ssmEp: inVpcEpInfo;
+  ssmMessagesEp: inVpcEpInfo;
+  ec2MessagesEp: inVpcEpInfo;
   keyPair: keypairInfo;
   ec2: ec2Info;
 }
@@ -304,6 +317,33 @@ export const devParameter: Parameter = {
       },
     ],
     tags: [{ key: "Name", value: "iam-role-ec2" }],
+  },
+
+  ssmEp: {
+    id: "SsmEndpoint",
+    serviceName: "ssm",
+    endPointType: "Interface",
+    privateDnsEnable: true,
+    mapSubnets: ["private-c"],
+    tags: [{ key: "Name", value: "ssm-ep" }],
+  },
+
+  ssmMessagesEp: {
+    id: "SsmMessagesEndpoint",
+    serviceName: "ssmmessages",
+    endPointType: "Interface",
+    privateDnsEnable: true,
+    mapSubnets: ["private-c"],
+    tags: [{ key: "Name", value: "ssm-messages-ep" }],
+  },
+
+  ec2MessagesEp: {
+    id: "Ec2MessagesEndpoint",
+    serviceName: "ec2messages",
+    endPointType: "Interface",
+    privateDnsEnable: true,
+    mapSubnets: ["private-c"],
+    tags: [{ key: "Name", value: "ec2-messages-ep" }],
   },
 
   keyPair: {
