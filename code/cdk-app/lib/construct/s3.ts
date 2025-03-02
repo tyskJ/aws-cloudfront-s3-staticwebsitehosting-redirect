@@ -53,26 +53,20 @@ export class S3 extends Construct {
     });
 
     // Bucket Policy
-    const bucketPolicy = new s3.CfnBucketPolicy(this, "CfnBucketPolicy", {
-      bucket: this.bucket.bucketName,
-      policyDocument: {
-        Version: "2012-10-17",
-        Statement: [
-          {
-            Sid: "AllowCloudFrontServicePrincipalReadWrite",
-            Effect: "Allow",
-            Principal: "*",
-            Action: ["s3:GetObject"],
-            Resource: `${this.bucket.bucketArn}/*`,
-            Condition: {
-              StringEquals: {
-                "aws:UserAgent": "Amazon CloudFront",
-              },
-            },
+    this.bucket.addToResourcePolicy(
+      new cdk.aws_iam.PolicyStatement({
+        sid: "AllowCloudFrontServicePrincipalReadWrit",
+        effect: cdk.aws_iam.Effect.ALLOW,
+        principals: [new cdk.aws_iam.StarPrincipal()],
+        actions: ["s3:GetObject"],
+        resources: [this.bucket.bucketArn + "/*"],
+        conditions: {
+          StringEquals: {
+            "aws:UserAgent": "Amazon CloudFront",
           },
-        ],
-      },
-    });
+        },
+      })
+    );
 
     // Object Uploads
     new s3_deployment.BucketDeployment(this, "UpdateHtml", {
