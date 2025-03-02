@@ -71,6 +71,7 @@
   --context hosted_zone_id_for_cf=CloudFrontレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_cf=CloudFrontレコードを登録するドメイン名 \
   --context issue_domain_name_for_cf=CloudFront用証明書のドメイン名 \
+  --context fqdn_for_cf=CloudFront用FQDN \
   --profile admin
 
 後片付け - ローカル -
@@ -87,12 +88,14 @@
   --context hosted_zone_id_for_cf=CloudFrontレコードを登録するホストゾーンID \
   --context zone_apnex_name_for_cf=CloudFrontレコードを登録するドメイン名 \
   --context issue_domain_name_for_cf=CloudFront用証明書のドメイン名 \
+  --context fqdn_for_cf=CloudFront用FQDN \
   --profile admin
 
 .. note::
 
   * スタック削除後、 *DNS検証* で自動作成されたホストゾーンの *CNAMEレコード* は残る
   * そのため、不要なら手動で *CNAMEレコード* を削除すること
+  * また、カスタムリソースで作成されたLambda関数のロググループも残るため、不要なら手動で削除すること
 
 参考資料
 =====================================================================
