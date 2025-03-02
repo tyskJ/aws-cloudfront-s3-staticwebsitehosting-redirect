@@ -7,9 +7,14 @@ import { Iam } from "../construct/iam";
 import { Ec2 } from "../construct/ec2";
 import { Alb } from "../construct/alb";
 import { S3 } from "../construct/s3";
+import { CloudFront } from "../construct/cloudfront";
+
+export interface TokyoStackProps extends Parameter {
+  cfCertArn: string;
+}
 
 export class TokyoStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: Parameter) {
+  constructor(scope: Construct, id: string, props: TokyoStackProps) {
     super(scope, id, props);
 
     // // Pseudo Parameters
@@ -72,6 +77,13 @@ export class TokyoStack extends cdk.Stack {
     const s3 = new S3(this, "S3", {
       bucket: props.bucket,
       albFqdn: this.node.tryGetContext("fqdn_for_alb"),
+    });
+
+    // CloudFront Distribution
+    const cf = new CloudFront(this, "CfDist", {
+      bucket: s3.bucket,
+      cfFqdn: this.node.tryGetContext("fqdn_for_cf"),
+      cfCertArn: props.cfCertArn,
     });
   }
 }

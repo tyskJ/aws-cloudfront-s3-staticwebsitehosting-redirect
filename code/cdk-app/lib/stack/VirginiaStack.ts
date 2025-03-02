@@ -3,6 +3,8 @@ import { Construct } from "constructs";
 import { Acm } from "../construct/acm";
 
 export class VirginiaStack extends cdk.Stack {
+  public readonly cfAcmArn: string;
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -12,5 +14,6 @@ export class VirginiaStack extends cdk.Stack {
       zone_apnex_name: this.node.tryGetContext("zone_apnex_name_for_cf"),
       issue_domain_name: this.node.tryGetContext("issue_domain_name_for_cf"),
     });
+    this.cfAcmArn = useast1Acm.certificate.certificateArn;
   }
 }
