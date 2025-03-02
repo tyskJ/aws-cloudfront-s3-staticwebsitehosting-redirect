@@ -50,12 +50,20 @@
 
   cdk bootstrap --profile admin
 
-3. CDKデプロイメント事前準備(バージニア北部リージョン)
+.. note::
+
+  * *cdk-app*プロジェクトフォルダ外で実施してください。
+
+1. CDKデプロイメント事前準備(バージニア北部リージョン)
 ---------------------------------------------------------------------
 .. code-block:: bash
 
   AccountId=`aws sts get-caller-identity --query Account --profile admin --output text`
   cdk bootstrap --profile admin ${AccountId}/us-east-1
+
+.. note::
+
+  * *cdk-app*プロジェクトフォルダ外で実施してください。
 
 実作業 - ローカル -
 =====================================================================
