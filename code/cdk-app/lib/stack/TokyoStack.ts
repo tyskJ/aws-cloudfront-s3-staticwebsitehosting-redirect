@@ -84,6 +84,8 @@ export class TokyoStack extends cdk.Stack {
       bucket: s3.bucket,
       cfFqdn: this.node.tryGetContext("fqdn_for_cf"),
       cfCertArn: props.cfCertArn,
+      hosted_zone_id: this.node.tryGetContext("hosted_zone_id_for_cf"),
+      zone_apnex_name: this.node.tryGetContext("zone_apnex_name_for_cf"),
     });
   }
 }
