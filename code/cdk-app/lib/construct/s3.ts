@@ -8,6 +8,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as s3_deployment from "aws-cdk-lib/aws-s3-deployment";
 import { bucketInfo } from "../../parameter";
 import * as fs from "fs";
 import * as path from "path";
@@ -69,6 +70,14 @@ export class S3 extends Construct {
           },
         ],
       },
+    });
+
+    // Object Uploads
+    new s3_deployment.BucketDeployment(this, "UpdateHtml", {
+      destinationBucket: bucket,
+      sources: [
+        s3_deployment.Source.asset(path.join(`${__dirname}`, "../html")),
+      ],
     });
   }
 }
