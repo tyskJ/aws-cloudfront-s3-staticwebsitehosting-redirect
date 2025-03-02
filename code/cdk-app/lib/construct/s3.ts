@@ -2,7 +2,7 @@
 ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ CloudFront S3 websitehosting redirect Stack - Cloud Development Kit s3.ts                                                                          ║
 ╠════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ This construct creates an L Construct S3 Bucket and policy.                                                                                       ║
+║ This construct creates an L2 Construct S3 Bucket and policy.                                                                                       ║
 ╚════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 import * as cdk from "aws-cdk-lib";
@@ -21,6 +21,7 @@ export class S3 extends Construct {
   constructor(scope: Construct, id: string, props: S3Props) {
     super(scope, id);
 
+    // import redirect rule file
     const jsonData = fs.readFileSync(
       path.join(`${__dirname}`, "../json/redirect-rule.json"),
       "utf8"
@@ -29,6 +30,7 @@ export class S3 extends Construct {
       jsonData.replace(/{RedirectHost}/g, props.albFqdn)
     );
 
+    // S3 Bucket
     const bucket = new s3.Bucket(this, "RedirectBucket", {
       bucketName: props.bucket.bucketName,
       autoDeleteObjects: props.bucket.autoDeleteObjects,
@@ -45,6 +47,28 @@ export class S3 extends Construct {
       websiteIndexDocument: props.bucket.websiteIndexDocument,
       websiteErrorDocument: props.bucket.websiteErrorDocument,
       websiteRoutingRules: redirectRule,
+    });
+
+    // Bucket Policy
+    const bucketPolicy = new s3.CfnBucketPolicy(this, "CfnBucketPolicy", {
+      bucket: bucket.bucketName,
+      policyDocument: {
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Sid: "AllowCloudFrontServicePrincipalReadWrite",
+            Effect: "Allow",
+            Principal: "*",
+            Action: ["s3:GetObject"],
+            Resource: `${bucket.bucketArn}/*`,
+            Condition: {
+              StringEquals: {
+                "aws:UserAgent": "Amazon CloudFront",
+              },
+            },
+          },
+        ],
+      },
     });
   }
 }
