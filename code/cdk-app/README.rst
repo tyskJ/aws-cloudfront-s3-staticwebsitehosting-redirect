@@ -99,11 +99,8 @@
 
 参考資料
 =====================================================================
-リファレンス
----------------------------------------------------------------------
-* []()
-
 ブログ
 ---------------------------------------------------------------------
 * `[AWS CDK] 同じApp Construct内で異なるリージョンのStackをデプロイできるのか試してみた <https://dev.classmethod.jp/articles/aws-cdk-to-see-if-stacks-in-different-regions-can-be-deployed-in-the-same-app-construct/>`_
 * `cdk-remote-stackでWAFv2とCloudFrontのクロスリージョン参照を実装する <https://dev.classmethod.jp/articles/cdk-remote-stack-webacl-cloudfront/>`_
+* `AWS CDK公式の機能でACMとCloudFrontのクロスリージョン参照を実装する <https://dev.classmethod.jp/articles/cdk-cross-region-references-for-acm-and-cloudfront/>`_
