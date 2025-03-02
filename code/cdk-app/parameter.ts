@@ -27,6 +27,7 @@ import * as cdk from "aws-cdk-lib";
 ║ ec2Info         │ Type defined L1 Construct EC2 Instance.                                                                                          ║
 ║ targetgrpInfo   │ Type defined L1 Construct ALB TargetGroup.                                                                                       ║
 ║ albInfo         │ Type defined L1 Construct ALB.                                                                                                   ║
+║ bucketInfo      │ Type defined L2 Construct S3 Bucket.                                                                                             ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
 export type vpcInfo = {
@@ -167,6 +168,22 @@ export type albInfo = {
   tags: { key: string; value: string }[];
 };
 
+export type bucketInfo = {
+  id: string;
+  bucketName: string;
+  autoDeleteObjects: boolean;
+  bucketKeyEnabled: boolean;
+  blockPublicAccess: {
+    blockPublicAcls: boolean;
+    ignorePublicAcls: boolean;
+    blockPublicPolicy: boolean;
+    restrictPublicBuckets: boolean;
+  };
+  websiteIndexDocument: string;
+  websiteErrorDocument: string;
+  tag: { key: string; value: string }[];
+};
+
 /*
 ╔════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ Interface Parameter                                                                                                                                ║
@@ -191,6 +208,7 @@ export interface Parameter extends cdk.StackProps {
   ec2: ec2Info;
   targetGrp: targetgrpInfo;
   alb: albInfo;
+  bucket: bucketInfo;
 }
 
 /*
@@ -215,7 +233,7 @@ export interface Parameter extends cdk.StackProps {
 ║ ec2             │ EC2 Instance.                                                                                                                    ║
 ║ targetGrp       │ TargetGroup for ALB.                                                                                                             ║
 ║ alb             │ ALB.                                                                                                                             ║
-║             │ .                                                                                                                     ║
+║ bucket          │ S3 Bucket.                                                                                                                       ║
 ║             │ .                                                                                                                     ║
 ╚═════════════════╧══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 */
@@ -434,5 +452,21 @@ export const devParameter: Parameter = {
     type: "application",
     mapSubnets: ["public-a", "public-c"],
     tags: [{ key: "Name", value: "alb" }],
+  },
+
+  bucket: {
+    id: "RedirectBucket",
+    bucketName: "cloudfront-s3-redirect",
+    autoDeleteObjects: true,
+    bucketKeyEnabled: true,
+    blockPublicAccess: {
+      blockPublicAcls: true,
+      ignorePublicAcls: true,
+      blockPublicPolicy: false,
+      restrictPublicBuckets: false,
+    },
+    websiteIndexDocument: "index.html",
+    websiteErrorDocument: "error.html",
+    tag: [{ key: "Name", value: "cloudfront-s3-redirect" }],
   },
 };

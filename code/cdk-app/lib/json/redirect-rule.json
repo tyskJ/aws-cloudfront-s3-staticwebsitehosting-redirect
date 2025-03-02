@@ -1,0 +1,16 @@
+[
+  {
+    "condition": {
+      "keyPrefixEquals": "test1/"
+    },
+    "hostName": "{RedirectHost}",
+    "replaceKey": "test1/"
+  },
+  {
+    "condition": {
+      "keyPrefixEquals": "test2/"
+    },
+    "hostName": "{RedirectHost}",
+    "replaceKey": "test2/"
+  }
+]

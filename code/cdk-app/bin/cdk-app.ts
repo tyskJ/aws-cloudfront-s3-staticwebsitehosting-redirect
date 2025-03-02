@@ -12,10 +12,10 @@ const tokyo = new TokyoStack(app, "TokyoStack", {
 });
 cdk.Tags.of(tokyo).add("Env", devParameter.EnvName);
 
-const virginia = new VirginiaStack(app, "VirginiaStack", {
-  env: {
-    region: "us-east-1",
-  },
-  description: "Virginia Region Stack.",
-});
-cdk.Tags.of(virginia).add("Env", "virginia");
+// const virginia = new VirginiaStack(app, "VirginiaStack", {
+//   env: {
+//     region: "us-east-1",
+//   },
+//   description: "Virginia Region Stack.",
+// });
+// cdk.Tags.of(virginia).add("Env", "virginia");
