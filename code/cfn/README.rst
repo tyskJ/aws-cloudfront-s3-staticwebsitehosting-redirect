@@ -133,7 +133,6 @@
   "Parameter", "概要", "入力値"
   "HostedZoneId", "Route 53 Public Hosted Zoneに登録しているドメインのHosted zone ID", "ご自身が所有するパブリックホストゾーンID（CloudFrontのAliasレコード登録先）"
   "Fqdn", "CloudFrontのAliasレコードを登録するときのFQDN", "ご自身で登録したいFQDN"
-  "BucketName", "Redirect用S3バケット名", "デプロイした静的ウェブサイトホスティング用S3バケット名"
   "WebSiteEndpoint", "Redirect用S3バケットのウェブサイトエンドポイント名", "静的ウェブサイトホスティング用S3バケットのウェブサイトエンドポイント"
 
 
