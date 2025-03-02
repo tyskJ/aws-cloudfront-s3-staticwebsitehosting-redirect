@@ -19,6 +19,8 @@ export interface S3Props extends cdk.StackProps {
 }
 
 export class S3 extends Construct {
+  public readonly bucket: s3.Bucket;
+
   constructor(scope: Construct, id: string, props: S3Props) {
     super(scope, id);
 
@@ -32,7 +34,7 @@ export class S3 extends Construct {
     );
 
     // S3 Bucket
-    const bucket = new s3.Bucket(this, "RedirectBucket", {
+    this.bucket = new s3.Bucket(this, "RedirectBucket", {
       bucketName: props.bucket.bucketName,
       autoDeleteObjects: props.bucket.autoDeleteObjects,
       bucketKeyEnabled: props.bucket.bucketKeyEnabled,
@@ -52,7 +54,7 @@ export class S3 extends Construct {
 
     // Bucket Policy
     const bucketPolicy = new s3.CfnBucketPolicy(this, "CfnBucketPolicy", {
-      bucket: bucket.bucketName,
+      bucket: this.bucket.bucketName,
       policyDocument: {
         Version: "2012-10-17",
         Statement: [
@@ -61,7 +63,7 @@ export class S3 extends Construct {
             Effect: "Allow",
             Principal: "*",
             Action: ["s3:GetObject"],
-            Resource: `${bucket.bucketArn}/*`,
+            Resource: `${this.bucket.bucketArn}/*`,
             Condition: {
               StringEquals: {
                 "aws:UserAgent": "Amazon CloudFront",
@@ -74,7 +76,7 @@ export class S3 extends Construct {
 
     // Object Uploads
     new s3_deployment.BucketDeployment(this, "UpdateHtml", {
-      destinationBucket: bucket,
+      destinationBucket: this.bucket,
       sources: [
         s3_deployment.Source.asset(path.join(`${__dirname}`, "../html")),
       ],
